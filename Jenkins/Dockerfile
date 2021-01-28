@@ -30,5 +30,5 @@ COPY pom.xml /usr/src/app
 # copy other source files (keep in image)
 COPY src /usr/src/app/src
 #Debug port for Jetty
-EXPOSE 8080
+EXPOSE 8080 5005
 CMD [ "mvn", "hpi:run", "-Djetty.port=8080"]
