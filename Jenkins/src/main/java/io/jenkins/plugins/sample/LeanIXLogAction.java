@@ -5,7 +5,7 @@ import jenkins.model.RunAction2;
 
 public class LeanIXLogAction implements RunAction2 {
 
-    private String logMessage;
+    private String lxManifestPath;
     private transient Run run;
 
     @Override
@@ -37,12 +37,12 @@ public class LeanIXLogAction implements RunAction2 {
         return run;
     }
 
-    public LeanIXLogAction(String logMessage) {
-        this.logMessage = logMessage;
+    public LeanIXLogAction(String lxManifestPath) {
+        this.lxManifestPath = lxManifestPath;
     }
 
-    public String getLogMessage() {
-        return logMessage;
+    public String getLxManifestPath() {
+        return lxManifestPath;
     }
 
 

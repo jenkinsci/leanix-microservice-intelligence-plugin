@@ -19,53 +19,54 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 
 
-
 public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep {
 
-    private final String logMessage;
-    private boolean useFrench;
+    private final String lxManifestPath;
+    private boolean useLeanIXConnector = true;
 
     @DataBoundConstructor
-    public LIXConnectorComBuilder(String logMessage) {
-        this.logMessage = logMessage;
+    public LIXConnectorComBuilder(String lxManifestPath) {
+        if (lxManifestPath == null || lxManifestPath.equals("")) {
+            this.lxManifestPath = "/lx-manifest.yml";
+        } else {
+            this.lxManifestPath = lxManifestPath;
+        }
     }
 
-    public String getLogMessage() {
-        return logMessage;
+    public String getLxManifestPath() {
+        return lxManifestPath;
     }
 
-    public boolean isUseFrench() {
-        return useFrench;
+    public boolean isUseLeanIXConnector() {
+        return useLeanIXConnector;
     }
 
     @DataBoundSetter
-    public void setUseFrench(boolean useFrench) {
-        this.useFrench = useFrench;
+    public void setUseLeanIXConnector(boolean useLeanIXConnector) {
+        this.useLeanIXConnector = useLeanIXConnector;
     }
 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-        run.addAction(new LeanIXLogAction(logMessage));
-        if (useFrench) {
-            listener.getLogger().println("Bonjour, " + logMessage + "!");
-        } else {
-            listener.getLogger().println("Hello, " + logMessage + "!");
+
+        if (isUseLeanIXConnector()) {
+            run.addAction(new LeanIXLogAction(lxManifestPath));
+            listener.getLogger().println("Your manifest path is " + lxManifestPath + "!");
+            listener.getLogger().println("Your manifest path is " + lxManifestPath + "!");
         }
+
     }
 
     @Symbol("greet")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
-        public FormValidation doCheckLogMessage(@QueryParameter String value, @QueryParameter boolean useFrench)
+        public FormValidation doCheckLXManifestPath(@QueryParameter String value, @QueryParameter boolean useFrench)
                 throws IOException, ServletException {
             if (value.length() == 0)
-                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLogMessage());
+                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
             if (value.length() < 4)
                 return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
-            if (!useFrench && value.matches(".*[éáàç].*")) {
-                return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_reallyFrench());
-            }
             return FormValidation.ok();
         }
 
@@ -76,7 +77,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep {
 
         @Override
         public String getDisplayName() {
-            return Messages.LIXConnectorComBuilder_DescriptorImpl_DisplayLogMessage();
+            return Messages.LIXConnectorComBuilder_DescriptorImpl_DisplayLXManifestPath();
         }
 
     }

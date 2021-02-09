@@ -10,6 +10,8 @@ Make sure Java 8 is installed on your computer.
 
 Two ways are described below to run this project in Docker:
 With the IDE Intellij and via console. If you want to further develop the plugin, we recommend using IntelliJ.
+To better work with IntelliJ install the plugin "Stapler plugin for IntelliJ IDEA" to work with jelly and Stapler.
+
 
 
 
@@ -33,7 +35,7 @@ As soon as the console output shows "INFO: Jenkins is fully up and running" , Je
 
 ### Running and debugging via Docker
 
-#TODO
+#### TODO
 
 
 ## Console
