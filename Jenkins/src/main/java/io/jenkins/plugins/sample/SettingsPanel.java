@@ -1,14 +1,16 @@
 package io.jenkins.plugins.sample;
 
 import hudson.Extension;
-import hudson.model.ManagementLink;
 import hudson.model.RootAction;
-import jenkins.model.ModelObjectWithContextMenu;
+import hudson.util.FormApply;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.util.List;
+import java.util.Enumeration;
 
 /**
  * Entry point to the preferences in the Jenkins preference panel.
@@ -16,12 +18,39 @@ import java.util.List;
  * @author Frank Poschner
  */
 @Extension
-public class SettingsPanel extends ManagementLink {
+public class SettingsPanel implements RootAction {
 
-    private String textAreaInput = "Input still to come";
+    private JsonPipelineConfiguration jsonPipelineConfiguration;
+
+    public JsonPipelineConfiguration getJsonPipelineConfiguration() {
+        if (jsonPipelineConfiguration == null|| jsonPipelineConfiguration.getJsonConfig() == null) {
+            jsonPipelineConfiguration = new JsonPipelineConfiguration();
+        }
+        return jsonPipelineConfiguration;
+    }
+
+
+    public void doSaveAndClearConfig(final StaplerRequest request, final StaplerResponse response) throws Exception {
+
+       /*if (request.getParameter("clear").equals("Clear")) {
+            jsonPipelineConfiguration.setJsonConfig("");
+        }*/
+
+        if (FormApply.isApply(request)) {
+            jsonPipelineConfiguration.setJsonConfig("");
+            response.sendRedirect("/jenkins/" + getUrlName());
+        } else {
+
+            JSONObject form = request.getSubmittedForm();
+            jsonPipelineConfiguration.saveConfiguration(form.toString());
+
+            response.sendRedirect(request.getContextPath());
+        }
+    }
+
 
     public String getIconFileName() {
-        return "gear.png";
+        return Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/images/logo_leanix.png";
     }
 
     public String getDisplayName() {
@@ -32,15 +61,8 @@ public class SettingsPanel extends ManagementLink {
         return "lix-mi-discovery";
     }
 
-    public String getTextAreaInput() {
-        return textAreaInput;
-    }
-
     // get all the jobs via Rest API:
     // http://jenkins_url:port/api/json?tree=jobs[name,url]
 
-    @DataBoundSetter
-    public void setTextAreaInput(String textAreaInput) {
-        this.textAreaInput = textAreaInput;
-    }
+
 }

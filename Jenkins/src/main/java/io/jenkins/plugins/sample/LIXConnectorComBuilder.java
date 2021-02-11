@@ -52,7 +52,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep {
         if (isUseLeanIXConnector()) {
             run.addAction(new LeanIXLogAction(lxManifestPath));
             listener.getLogger().println("Your manifest path is " + lxManifestPath + "!");
-            listener.getLogger().println("Your manifest path is " + lxManifestPath + "!");
         }
 
     }
