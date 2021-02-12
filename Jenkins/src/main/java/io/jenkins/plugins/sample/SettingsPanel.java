@@ -1,8 +1,10 @@
 package io.jenkins.plugins.sample;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.RootAction;
 import hudson.util.FormApply;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -13,7 +15,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import java.util.Enumeration;
 
 /**
- * Entry point to the preferences in the Jenkins preference panel.
+ * Entry point to the settings in the Jenkins settings panel.
  *
  * @author Frank Poschner
  */
@@ -32,9 +34,6 @@ public class SettingsPanel implements RootAction {
 
     public void doSaveAndClearConfig(final StaplerRequest request, final StaplerResponse response) throws Exception {
 
-       /*if (request.getParameter("clear").equals("Clear")) {
-            jsonPipelineConfiguration.setJsonConfig("");
-        }*/
 
         if (FormApply.isApply(request)) {
             jsonPipelineConfiguration.setJsonConfig("");
@@ -46,6 +45,13 @@ public class SettingsPanel implements RootAction {
 
             response.sendRedirect(request.getContextPath());
         }
+    }
+
+    public FormValidation doCheckJsonConfigTextarea(@QueryParameter String value) {
+        if (Util.fixEmptyAndTrim(value) == null) {
+            return FormValidation.error("foo cannot be empty");
+        }
+        return FormValidation.ok();
     }
 
 

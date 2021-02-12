@@ -1,12 +1,14 @@
 package io.jenkins.plugins.sample;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -21,16 +23,8 @@ public class JsonPipelineConfiguration {
     private String customFileDirectory;
 
     public JsonPipelineConfiguration() {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
 
-        if (jenkins != null) {
-            String url = jenkins.getRootUrl();
-            if (url != null) {
-                setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/jsonpipelineconfiguration/defaultjsonconfig.json");
-            }
-            setCustomFileDirectory(jenkins.getRootDir() + "/jsonPipelineConfiguration");
-            setCustomFilePath(jenkins.getRootDir() + "/jsonPipelineConfiguration/customJsonConfig.json");
-
+        if (setFilePathsAndDirectories()) {
             //JSON parser object to parse read file
             JSONParser jsonParser = new JSONParser();
 
@@ -47,7 +41,7 @@ public class JsonPipelineConfiguration {
                     inputStream = defaultUrl.openStream();
                 }
 
-                Reader fileReader = new InputStreamReader(inputStream, "UTF-8");
+                Reader fileReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 //Read JSON file
                 Object obj = jsonParser.parse(fileReader);
                 jsonConfig = obj.toString();
@@ -64,53 +58,84 @@ public class JsonPipelineConfiguration {
     }
 
     public String saveConfiguration(String jsonString) {
-        jsonConfig = jsonString;
-        //check, if directory and file exist
-        try {
-            checkCustomFileDir();
-            File fileCheck = new File(customFilePath);
-            if (fileCheck.createNewFile()) {
-                System.out.println("File created: " + fileCheck.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-            return "Exception";
-        }
 
-        //write to the file
-        try {
-            FileWriter file = new FileWriter(customFilePath);
+        jsonConfig = jsonString;
+
+        //check, if directory and file exist
+        if (checkCustomFileDir()) {
+
             try {
 
-                // Constructs a FileWriter given a file name, using the platform's default charset
-
-                JSONParser jsonParser = new JSONParser();
-                Object JSONObj = jsonParser.parse(jsonString);
-                file.write(JSONObj.toString());
-
+                File fileCheck = new File(customFilePath);
+                if (fileCheck.createNewFile()) {
+                    System.out.println("File created: " + fileCheck.getName());
+                } else {
+                    System.out.println("File already exists.");
+                }
             } catch (IOException e) {
+                System.out.println("An error occurred.");
                 e.printStackTrace();
                 return "Exception";
+            }
 
-            } finally {
+
+            //write to the file
+            try (
+                    FileOutputStream fileStream = new FileOutputStream(customFilePath);
+                    OutputStreamWriter writer = new OutputStreamWriter(fileStream, "UTF-8");
+            ) {
 
                 try {
-                    file.flush();
-                    file.close();
+
+                    JSONParser jsonParser = new JSONParser();
+                    Object JSONObj = jsonParser.parse(jsonString);
+                    writer.write(JSONObj.toString());
+                    writer.flush();
+                    writer.close();
+
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
+                    writer.close();
                     return "Exception";
                 }
+            } catch (final Exception e) {
+                e.printStackTrace();
+                return "Exception";
             }
-        } catch (final Exception e) {
-            e.printStackTrace();
-            return "Exception";
+            return "OK";
         }
-        return "OK";
+        return "Exception";
+    }
+
+    // @SuppressFBWarnings: Error in the spotbugs version jenkins uses, if updated it can maybe be removed
+    // https://github.com/spotbugs/spotbugs/issues/518
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
+    public boolean checkCustomFileDir() {
+        File customDir = new File(customFileDirectory);
+        try {
+            if (!customDir.exists()) {
+                customDir.mkdirs();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    private boolean setFilePathsAndDirectories() {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+
+        if (jenkins != null) {
+            String url = jenkins.getRootUrl();
+            if (url != null) {
+                setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/jsonpipelineconfiguration/defaultjsonconfig.json");
+            }
+            setCustomFileDirectory(jenkins.getRootDir() + "/jsonPipelineConfiguration");
+            setCustomFilePath(jenkins.getRootDir() + "/jsonPipelineConfiguration/customJsonConfig.json");
+            return true;
+        }
+        return false;
     }
 
 
@@ -133,13 +158,6 @@ public class JsonPipelineConfiguration {
 
     public void setJsonConfig(String jsonConfig) {
         this.jsonConfig = jsonConfig;
-    }
-
-    public void checkCustomFileDir(){
-        File customDir = new File(customFileDirectory);
-        if (!customDir.exists()){
-            customDir.mkdirs();
-        }
     }
 
     public String getCustomFileDirectory() {

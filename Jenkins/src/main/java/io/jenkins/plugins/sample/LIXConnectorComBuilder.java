@@ -56,7 +56,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep {
 
     }
 
-    @Symbol("greet")
+    @Symbol("log")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
