@@ -1,9 +1,8 @@
-
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <l:layout title="LeanIX-Microservice-Discovery">
+    <l:layout title="LeanIX-Microservice-Discovery" norefresh="true">
         <l:side-panel>
-            <st:include page="sidepanel.jelly" it="${it.run}" optional="true" />
+            <st:include page="sidepanel.jelly" optional="true"/>
         </l:side-panel>
         <l:main-panel>
 
@@ -18,15 +17,28 @@
                     </tr>
                     <tr>
                         <td width="800">
-                            <f:textarea name="jsonConfig" field="jsonConfigTextarea" value="${it.jsonPipelineConfiguration.jsonConfig}"/>
+                            <f:textarea codemirror-mode="javascript" codemirror-config="json: true"
+                                        value="${it.jsonPipelineConfiguration.jsonConfig}"/>
                         </td>
                     </tr>
 
                 </table>
+                <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px">
+                    <j:if test="${!it.jsonPipelineConfiguration.jsonCorrect}">
+                        There seems to be an error in your JSON structure, please review it before pressing "save" again.
+                    </j:if>
+                </div>
+
+                <div style="color:red; font-size: large; margin-bottom: 20px;">
+                    <j:if test="${it.jsonPipelineConfiguration.isSaveError}">
+                        There was an error while saving, please try again!
+                    </j:if>
+                </div>
+
                 <div style="float:left">
                     <f:submit value="Save" name="save"/>
 
-                    <f:apply value="Clear" />
+                    <f:apply value="Clear"/>
                 </div>
 
             </f:form>
@@ -34,3 +46,4 @@
         </l:main-panel>
     </l:layout>
 </j:jelly>
+

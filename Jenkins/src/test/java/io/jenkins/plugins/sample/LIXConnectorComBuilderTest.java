@@ -15,7 +15,7 @@ public class LIXConnectorComBuilderTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    final String lxManifestPath = "Bobby";
+    final String lxManifestPath = "/lx-manifest.yml";
 
     @Test
     public void testConfigRoundtrip() throws Exception {

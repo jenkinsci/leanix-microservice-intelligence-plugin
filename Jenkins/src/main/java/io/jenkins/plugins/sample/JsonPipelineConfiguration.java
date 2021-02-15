@@ -10,10 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
+import org.json.simple.parser.*;
+import org.json.*;
+
 
 public class JsonPipelineConfiguration {
 
@@ -21,6 +21,10 @@ public class JsonPipelineConfiguration {
     private String defaultFilePath;
     private String customFilePath;
     private String customFileDirectory;
+    private static final String jsonIncorrectWarning = "There seems to be an error in your JSON string, please check it.";
+    private static final String saveError = "An error occurred while saving. Please try again.";
+    private boolean jsonCorrect = true;
+    private boolean isSaveError = false;
 
     public JsonPipelineConfiguration() {
 
@@ -44,7 +48,7 @@ public class JsonPipelineConfiguration {
                 Reader fileReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 //Read JSON file
                 Object obj = jsonParser.parse(fileReader);
-                jsonConfig = obj.toString();
+                jsonConfig = obj.toString().replaceAll("\\\\", "");
 
             } catch (FileNotFoundException e) {
 
@@ -52,14 +56,13 @@ public class JsonPipelineConfiguration {
                 e.printStackTrace();
             } catch (ParseException e) {
                 e.printStackTrace();
-
+                jsonConfig = "";
             }
         }
     }
 
     public String saveConfiguration(String jsonString) {
 
-        jsonConfig = jsonString;
 
         //check, if directory and file exist
         if (checkCustomFileDir()) {
@@ -79,23 +82,31 @@ public class JsonPipelineConfiguration {
             }
 
 
-            //write to the file
+            //create file writer
             try (
                     FileOutputStream fileStream = new FileOutputStream(customFilePath);
                     OutputStreamWriter writer = new OutputStreamWriter(fileStream, "UTF-8");
             ) {
 
                 try {
-
+                    // check and write JSON to file
                     JSONParser jsonParser = new JSONParser();
+
+                    setJsonCorrect(true);
+                    setSaveError(false);
                     Object JSONObj = jsonParser.parse(jsonString);
                     writer.write(JSONObj.toString());
                     writer.flush();
                     writer.close();
-
+                    setJsonConfig(jsonString);
+                } catch (ParseException e) {
+                    System.out.println("JSON wrong");
+                    setJsonCorrect(false);
+                    setJsonConfig(jsonString);
                 } catch (IOException e) {
                     e.printStackTrace();
                     writer.close();
+                    setSaveError(true);
                     return "Exception";
                 }
             } catch (final Exception e) {
@@ -107,7 +118,7 @@ public class JsonPipelineConfiguration {
         return "Exception";
     }
 
-    // @SuppressFBWarnings: Error in the spotbugs version jenkins uses, if updated it can maybe be removed
+    // @SuppressFBWarnings: Error in the spotbugs version jenkins uses, if updated the annotation can maybe be removed
     // https://github.com/spotbugs/spotbugs/issues/518
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
     public boolean checkCustomFileDir() {
@@ -166,5 +177,29 @@ public class JsonPipelineConfiguration {
 
     public void setCustomFileDirectory(String customFileDirectory) {
         this.customFileDirectory = customFileDirectory;
+    }
+
+    public String getJsonIncorrectWarning() {
+        return jsonIncorrectWarning;
+    }
+
+    public String getSaveError() {
+        return saveError;
+    }
+
+    public boolean isJsonCorrect() {
+        return jsonCorrect;
+    }
+
+    public void setJsonCorrect(boolean jsonCorrect) {
+        this.jsonCorrect = jsonCorrect;
+    }
+
+    public boolean isSaveError() {
+        return isSaveError;
+    }
+
+    public void setSaveError(boolean saveError) {
+        isSaveError = saveError;
     }
 }

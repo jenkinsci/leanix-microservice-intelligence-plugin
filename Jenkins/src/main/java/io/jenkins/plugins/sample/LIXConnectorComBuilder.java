@@ -17,9 +17,10 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.Serializable;
 
 
-public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep {
+public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, Serializable {
 
     private final String lxManifestPath;
     private boolean useLeanIXConnector = true;
@@ -60,11 +61,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep {
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
-        public FormValidation doCheckLXManifestPath(@QueryParameter String value, @QueryParameter boolean useFrench)
+        public FormValidation doCheckLxmanifestpath(@QueryParameter String value, @QueryParameter boolean useleanixconnector)
                 throws IOException, ServletException {
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
-            if (value.length() < 4)
+            if (value.length() < 2)
                 return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
             return FormValidation.ok();
         }
