@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sample;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -23,44 +24,55 @@ import java.io.Serializable;
 @Extension
 public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, Serializable {
 
-    private String lxManifestPath = "/lx-manifest.yml";
-    private boolean useLeanIXConnector = true;
+    private String lxmanifestpath;
+    private boolean useleanixconnector;
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
     }
 
-    public String getLxManifestPath() {
-        return lxManifestPath;
-    }
-
-    public boolean isUseLeanIXConnector() {
-        return useLeanIXConnector;
+    public boolean isUseleanixconnector() {
+        return useleanixconnector;
     }
 
     @DataBoundSetter
-    public void setUseLeanIXConnector(boolean useLeanIXConnector) {
-        this.useLeanIXConnector = useLeanIXConnector;
+    public void setUseleanixconnector(boolean useLeanIXConnector) {
+        this.useleanixconnector = useLeanIXConnector;
+    }
+
+    @NonNull
+    public boolean getUseleanixconnector() {
+        return useleanixconnector;
     }
 
     @DataBoundSetter
-    public void setLxManifestPath(String lxManifestPath) {
-        this.lxManifestPath = lxManifestPath;
+    public void setLxmanifestpath(String lxManifestPath) {
+        this.lxmanifestpath = lxManifestPath;
     }
+
+    @NonNull
+    public String getLxmanifestpath() {
+        return lxmanifestpath;
+    }
+
 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
-        if (isUseLeanIXConnector()) {
-            run.addAction(new LeanIXLogAction(lxManifestPath));
-            listener.getLogger().println("Your manifest path is " + lxManifestPath + "!");
+        if (isUseleanixconnector()) {
+            run.addAction(new LeanIXLogAction(lxmanifestpath));
+            listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
         }
 
     }
 
-    @Symbol("log")
+    @Symbol("LeanIXMicroserviceDiscovery")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+
+        public static final String defaultLXManifestPath = "/lx-manifest.yml";
+        public static final boolean defaultUseLeanIXConnector = true;
+
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value, @QueryParameter boolean useleanixconnector)
                 throws IOException, ServletException {
