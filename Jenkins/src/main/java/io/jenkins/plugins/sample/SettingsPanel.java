@@ -1,23 +1,14 @@
 package io.jenkins.plugins.sample;
 
 
-import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.*;
-import hudson.tasks.Builder;
-import hudson.tasks.Publisher;
 import hudson.util.FormApply;
-import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Entry point to the settings in the Jenkins settings panel.
@@ -31,7 +22,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
     private JsonPipelineConfiguration jsonPipelineConfiguration;
 
     public JsonPipelineConfiguration getJsonPipelineConfiguration() {
-        if (jsonPipelineConfiguration == null || jsonPipelineConfiguration.getJsonConfig() == null) {
+        if (jsonPipelineConfiguration == null || jsonPipelineConfiguration.getJsonConfigString() == null) {
             jsonPipelineConfiguration = new JsonPipelineConfiguration();
         }
         return jsonPipelineConfiguration;
@@ -42,7 +33,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
 
 
         if (FormApply.isApply(request)) {
-            jsonPipelineConfiguration.setJsonConfig("");
+            jsonPipelineConfiguration.setJsonConfigString("");
             response.sendRedirect("/jenkins/" + getUrlName());
         } else {
 

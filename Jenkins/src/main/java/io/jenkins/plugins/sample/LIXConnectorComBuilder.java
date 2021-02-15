@@ -5,13 +5,17 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import jenkins.tasks.SimpleBuildStep;
+import net.sf.json.JSON;
 import org.jenkinsci.Symbol;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -56,10 +60,28 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
         if (getUseleanixconnector()) {
-            run.addAction(new LeanIXLogAction(lxmanifestpath));
+            LeanIXLogAction logAction = new LeanIXLogAction(lxmanifestpath);
+            run.addAction(logAction);
+
+            Job job = run.getParent();
+            JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
+            JSONObject jsonConfig = (JSONObject) jsonPipelineConfig.getJsonConfig();
+            if (jsonConfig != null) {
+                JSONArray lixConfigurations = (JSONArray) jsonConfig.get("leanIXConfigurations");
+                for (Object pipeConf : lixConfigurations) {
+                    if (pipeConf instanceof JSONObject) {
+                        JSONObject pipeConfJson = (JSONObject) pipeConf;
+                        JSONArray pipelines = (JSONArray) pipeConfJson.get("pipelines");
+                        if (pipelines.contains(job.getName())) {
+                            setLxmanifestpath(pipeConfJson.get("path").toString());
+                        }
+                    }
+                }
+            } else {
+                logAction.setLogMessage("Path to the manifest wasn't found. Please check your configuration!");
+            }
             listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
         }
-
     }
 
     @Symbol("leanIXMicroserviceDiscovery")

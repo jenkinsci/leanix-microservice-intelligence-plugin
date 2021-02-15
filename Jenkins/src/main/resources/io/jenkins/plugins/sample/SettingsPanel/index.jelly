@@ -18,7 +18,7 @@
                     <tr>
                         <td width="800">
                             <f:textarea codemirror-mode="javascript" codemirror-config="json: true"
-                                        value="${it.jsonPipelineConfiguration.jsonConfig}"/>
+                                        value="${it.jsonPipelineConfiguration.jsonConfigString}"/>
                         </td>
                     </tr>
 

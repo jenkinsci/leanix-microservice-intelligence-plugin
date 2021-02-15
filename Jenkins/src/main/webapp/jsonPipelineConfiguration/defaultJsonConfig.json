@@ -1,15 +1,17 @@
 {
-  "config1":{
-    "pipelines":[
-      "pipeline1",
-      "pipeline2"
-    ],
-    "path":"/lx-manifest.yaml"
-  },
-  "config2":{
-    "pipelines":[
-      "pipeline3"
-    ],
-    "path":"/lx-manifest.yml"
-  }
+  "leanIXConfigurations":[
+    {
+      "pipelines":[
+        "pipeline1",
+        "pipeline2"
+      ],
+      "path":"/other/lx-manifest.yaml"
+    },
+    {
+      "pipelines":[
+        "pipeline3"
+      ],
+      "path":"/lx-manifest.yml"
+    }
+  ]
 }

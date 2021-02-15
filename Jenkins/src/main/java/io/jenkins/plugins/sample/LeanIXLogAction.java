@@ -8,6 +8,8 @@ public class LeanIXLogAction implements RunAction2 {
     private String lxManifestPath;
     private transient Run run;
 
+    private String logMessage;
+
     @Override
     public void onAttached(Run<?, ?> run) {
         this.run = run;
@@ -45,5 +47,12 @@ public class LeanIXLogAction implements RunAction2 {
         return lxManifestPath;
     }
 
+    public String getLogMessage() {
+        return logMessage;
+    }
+
+    public void setLogMessage(String logMessage) {
+        this.logMessage = logMessage;
+    }
 
 }

@@ -3,21 +3,19 @@ package io.jenkins.plugins.sample;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
-import jenkins.model.JenkinsLocationConfiguration;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 
 import org.json.simple.parser.*;
-import org.json.*;
 
 
 public class JsonPipelineConfiguration {
 
-    private String jsonConfig;
+    private String jsonConfigString;
+    private Object jsonConfig;
     private String defaultFilePath;
     private String customFilePath;
     private String customFileDirectory;
@@ -48,7 +46,8 @@ public class JsonPipelineConfiguration {
                 Reader fileReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 //Read JSON file
                 Object obj = jsonParser.parse(fileReader);
-                jsonConfig = obj.toString().replaceAll("\\\\", "");
+                jsonConfig = obj;
+                jsonConfigString = obj.toString().replaceAll("\\\\", "");
 
             } catch (FileNotFoundException e) {
 
@@ -56,7 +55,7 @@ public class JsonPipelineConfiguration {
                 e.printStackTrace();
             } catch (ParseException e) {
                 e.printStackTrace();
-                jsonConfig = "";
+                jsonConfigString = "";
             }
         }
     }
@@ -98,11 +97,11 @@ public class JsonPipelineConfiguration {
                     writer.write(JSONObj.toString());
                     writer.flush();
                     writer.close();
-                    setJsonConfig(jsonString);
+                    setJsonConfigString(jsonString);
                 } catch (ParseException e) {
                     System.out.println("JSON wrong");
                     setJsonCorrect(false);
-                    setJsonConfig(jsonString);
+                    setJsonConfigString(jsonString);
                 } catch (IOException e) {
                     e.printStackTrace();
                     writer.close();
@@ -163,12 +162,12 @@ public class JsonPipelineConfiguration {
         return "";
     }
 
-    public String getJsonConfig() {
-        return jsonConfig;
+    public String getJsonConfigString() {
+        return jsonConfigString;
     }
 
-    public void setJsonConfig(String jsonConfig) {
-        this.jsonConfig = jsonConfig;
+    public void setJsonConfigString(String jsonConfigString) {
+        this.jsonConfigString = jsonConfigString;
     }
 
     public String getCustomFileDirectory() {
@@ -201,5 +200,14 @@ public class JsonPipelineConfiguration {
 
     public void setSaveError(boolean saveError) {
         isSaveError = saveError;
+    }
+
+
+    public Object getJsonConfig() {
+        return jsonConfig;
+    }
+
+    public void setJsonConfig(Object jsonConfig) {
+        this.jsonConfig = jsonConfig;
     }
 }
