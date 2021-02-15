@@ -20,20 +20,20 @@ public class LIXConnectorComBuilderTest {
     @Test
     public void testConfigRoundtrip() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        project.getBuildersList().add(new LIXConnectorComBuilder(lxManifestPath));
+        project.getBuildersList().add(new LIXConnectorComBuilder());
         project = jenkins.configRoundtrip(project);
-        jenkins.assertEqualDataBoundBeans(new LIXConnectorComBuilder(lxManifestPath), project.getBuildersList().get(0));
+        jenkins.assertEqualDataBoundBeans(new LIXConnectorComBuilder(), project.getBuildersList().get(0));
     }
 
     @Test
     public void testConfigRoundtripUseLeanIXConnector() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        LIXConnectorComBuilder builder = new LIXConnectorComBuilder(lxManifestPath);
+        LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
         builder.setUseLeanIXConnector(true);
         project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
 
-        LIXConnectorComBuilder lhs = new LIXConnectorComBuilder(lxManifestPath);
+        LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
         lhs.setUseLeanIXConnector(true);
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
@@ -41,7 +41,7 @@ public class LIXConnectorComBuilderTest {
     @Test
     public void testBuild() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        LIXConnectorComBuilder builder = new LIXConnectorComBuilder(lxManifestPath);
+        LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
         project.getBuildersList().add(builder);
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);

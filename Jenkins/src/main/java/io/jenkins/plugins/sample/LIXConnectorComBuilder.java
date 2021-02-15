@@ -20,18 +20,14 @@ import java.io.IOException;
 import java.io.Serializable;
 
 
+@Extension
 public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, Serializable {
 
-    private final String lxManifestPath;
+    private String lxManifestPath = "/lx-manifest.yml";
     private boolean useLeanIXConnector = true;
 
     @DataBoundConstructor
-    public LIXConnectorComBuilder(String lxManifestPath) {
-        if (lxManifestPath == null || lxManifestPath.equals("")) {
-            this.lxManifestPath = "/lx-manifest.yml";
-        } else {
-            this.lxManifestPath = lxManifestPath;
-        }
+    public LIXConnectorComBuilder() {
     }
 
     public String getLxManifestPath() {
@@ -45,6 +41,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     @DataBoundSetter
     public void setUseLeanIXConnector(boolean useLeanIXConnector) {
         this.useLeanIXConnector = useLeanIXConnector;
+    }
+
+    @DataBoundSetter
+    public void setLxManifestPath(String lxManifestPath) {
+        this.lxManifestPath = lxManifestPath;
     }
 
     @Override
