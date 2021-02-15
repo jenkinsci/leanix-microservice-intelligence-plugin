@@ -59,7 +59,7 @@ public class LIXConnectorComBuilderTest {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, "test-scripted-pipeline");
         String pipelineScript
                 = "node {\n"
-                + "  leanixmicroservicediscovery lxmanifestpath: '/lx-manifest.yml', useleanixconnector: true" + "\n"
+                + "  leanIXMicroserviceDiscovery lxmanifestpath: '/lx-manifest.yml', useleanixconnector: true" + "\n"
                 + "}";
         job.setDefinition(new CpsFlowDefinition(pipelineScript, true));
         WorkflowRun completedBuild = jenkins.assertBuildStatusSuccess(job.scheduleBuild2(0));

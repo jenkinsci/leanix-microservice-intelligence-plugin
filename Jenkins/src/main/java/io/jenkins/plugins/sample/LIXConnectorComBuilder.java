@@ -62,7 +62,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     }
 
-    @Symbol("leanixmicroservicediscovery")
+    @Symbol("leanIXMicroserviceDiscovery")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
