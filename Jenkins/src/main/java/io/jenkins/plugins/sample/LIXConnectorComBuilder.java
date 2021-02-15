@@ -31,10 +31,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     public LIXConnectorComBuilder() {
     }
 
-    public boolean isUseleanixconnector() {
-        return useleanixconnector;
-    }
-
     @DataBoundSetter
     public void setUseleanixconnector(boolean useLeanIXConnector) {
         this.useleanixconnector = useLeanIXConnector;
@@ -59,14 +55,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
-        if (isUseleanixconnector()) {
+        if (getUseleanixconnector()) {
             run.addAction(new LeanIXLogAction(lxmanifestpath));
             listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
         }
 
     }
 
-    @Symbol("LeanIXMicroserviceDiscovery")
+    @Symbol("leanixmicroservicediscovery")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
@@ -74,12 +70,18 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         public static final boolean defaultUseLeanIXConnector = true;
 
 
-        public FormValidation doCheckLxmanifestpath(@QueryParameter String value, @QueryParameter boolean useleanixconnector)
+        public FormValidation doCheckLxmanifestpath(@QueryParameter String value)
                 throws IOException, ServletException {
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
             if (value.length() < 2)
                 return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector)
+                throws IOException, ServletException {
+            System.out.println("here");
             return FormValidation.ok();
         }
 

@@ -17,24 +17,26 @@ public class LIXConnectorComBuilderTest {
 
     final String lxManifestPath = "/lx-manifest.yml";
 
-/*    @Test
+    @Test
     public void testConfigRoundtrip() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        project.getBuildersList().add(new LIXConnectorComBuilder());
+        LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
+        project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
-        jenkins.assertEqualDataBoundBeans(new LIXConnectorComBuilder(), project.getBuildersList().get(0));
+        LIXConnectorComBuilder testBuilder = new LIXConnectorComBuilder();
+        testBuilder.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
+        jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
     @Test
     public void testConfigRoundtripUseLeanIXConnector() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
         LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
-        builder.setUseleanixconnector(true);
         project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
 
         LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
-        lhs.setUseleanixconnector(true);
+        lhs.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 
@@ -43,6 +45,7 @@ public class LIXConnectorComBuilderTest {
         FreeStyleProject project = jenkins.createFreeStyleProject();
         LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
         builder.setLxmanifestpath("/lx-manifest.yml");
+        builder.setUseleanixconnector(true);
         project.getBuildersList().add(builder);
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
@@ -56,12 +59,12 @@ public class LIXConnectorComBuilderTest {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, "test-scripted-pipeline");
         String pipelineScript
                 = "node {\n"
-                + "  LeanIXMicroserviceDiscovery " + lxManifestPath + "\n"
+                + "  leanixmicroservicediscovery lxmanifestpath: '/lx-manifest.yml', useleanixconnector: true" + "\n"
                 + "}";
         job.setDefinition(new CpsFlowDefinition(pipelineScript, true));
         WorkflowRun completedBuild = jenkins.assertBuildStatusSuccess(job.scheduleBuild2(0));
         String expectedString = "Your manifest path is " + lxManifestPath + "!";
         jenkins.assertLogContains(expectedString, completedBuild);
-    }*/
+    }
 
 }
