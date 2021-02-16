@@ -102,10 +102,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value)
                 throws IOException, ServletException {
 
-            Jenkins jenkins = Jenkins.get();
-            this.getDescriptorUrl();
-
-
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
             if (value.length() < 2)
