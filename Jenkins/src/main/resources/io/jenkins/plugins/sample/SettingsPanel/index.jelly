@@ -29,16 +29,22 @@
                     </j:if>
                 </div>
 
-                <div style="color:red; font-size: large; margin-bottom: 20px;">
+                <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px;">
                     <j:if test="${it.jsonPipelineConfiguration.isSaveError}">
                         There was an error while saving, please try again!
+                    </j:if>
+                </div>
+
+                <div style="color:green; font-size: large; margin-top: 20px; margin-bottom: 20px;">
+                    <j:if test="${it.jsonPipelineConfiguration.isSavedCorrect}">
+                        Configuration saved!
                     </j:if>
                 </div>
 
                 <div style="float:left">
                     <f:submit value="Save" name="save"/>
 
-                    <f:apply value="Clear"/>
+                    <f:apply value="Reload Saved File"/>
                 </div>
 
             </f:form>

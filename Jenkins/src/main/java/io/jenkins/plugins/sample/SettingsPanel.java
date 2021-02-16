@@ -7,6 +7,8 @@ import hudson.util.FormApply;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -21,6 +23,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
 
     private JsonPipelineConfiguration jsonPipelineConfiguration;
 
+
     public JsonPipelineConfiguration getJsonPipelineConfiguration() {
         if (jsonPipelineConfiguration == null || jsonPipelineConfiguration.getJsonConfigString() == null) {
             jsonPipelineConfiguration = new JsonPipelineConfiguration();
@@ -31,20 +34,20 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
 
     public void doSaveAndClearConfig(final StaplerRequest request, final StaplerResponse response) throws Exception {
 
-
         if (FormApply.isApply(request)) {
-            jsonPipelineConfiguration.setJsonConfigString("");
-            response.sendRedirect("/jenkins/" + getUrlName());
+            jsonPipelineConfiguration = new JsonPipelineConfiguration();
+
+            FormApply.success("../").generateResponse(request, response, jsonPipelineConfiguration.getJsonConfigString());
         } else {
 
             JSONObject form = request.getSubmittedForm();
             Object o = form.get("");
-            JSONArray a = (JSONArray)o;
+            JSONArray a = (JSONArray) o;
             Object formContent = a.get(0);
             jsonPipelineConfiguration.saveConfiguration(formContent.toString());
-            if(jsonPipelineConfiguration.isJsonCorrect() && !jsonPipelineConfiguration.isSaveError()) {
+            if (jsonPipelineConfiguration.isJsonCorrect() && !jsonPipelineConfiguration.isSaveError()) {
                 response.sendRedirect(request.getContextPath());
-            }else{
+            } else {
                 response.sendRedirect("");
             }
         }

@@ -11,6 +11,7 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSON;
 import org.jenkinsci.Symbol;
@@ -99,6 +100,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             if (value.length() < 2)
                 return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
             return FormValidation.ok();
+
         }
 
         public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector)

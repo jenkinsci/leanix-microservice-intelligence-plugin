@@ -23,6 +23,8 @@ public class JsonPipelineConfiguration {
     private static final String saveError = "An error occurred while saving. Please try again.";
     private boolean jsonCorrect = true;
     private boolean isSaveError = false;
+    private boolean isSavedCorrect = false;
+
 
     public JsonPipelineConfiguration() {
 
@@ -61,7 +63,7 @@ public class JsonPipelineConfiguration {
     }
 
     public String saveConfiguration(String jsonString) {
-
+        setSavedCorrect(false);
 
         //check, if directory and file exist
         if (checkCustomFileDir()) {
@@ -80,37 +82,42 @@ public class JsonPipelineConfiguration {
                 return "Exception";
             }
 
+            try {
+                // check JSON and convert it to object
+                JSONParser jsonParser = new JSONParser();
+                Object JSONObj = jsonParser.parse(jsonString);
 
-            //create file writer
-            try (
-                    FileOutputStream fileStream = new FileOutputStream(customFilePath);
-                    OutputStreamWriter writer = new OutputStreamWriter(fileStream, "UTF-8");
-            ) {
+                //create file writer
+                try (
+                        FileOutputStream fileStream = new FileOutputStream(customFilePath);
+                        OutputStreamWriter writer = new OutputStreamWriter(fileStream, "UTF-8");
+                ) {
 
-                try {
-                    // check and write JSON to file
-                    JSONParser jsonParser = new JSONParser();
+                    try {
+                        setJsonCorrect(true);
+                        setSaveError(false);
 
-                    setJsonCorrect(true);
-                    setSaveError(false);
-                    Object JSONObj = jsonParser.parse(jsonString);
-                    writer.write(JSONObj.toString());
-                    writer.flush();
-                    writer.close();
-                    setJsonConfigString(jsonString);
-                } catch (ParseException e) {
-                    System.out.println("JSON wrong");
-                    setJsonCorrect(false);
-                    setJsonConfigString(jsonString);
-                } catch (IOException e) {
+                        // write to file
+                        writer.write(JSONObj.toString());
+                        writer.flush();
+                        writer.close();
+                        setJsonConfigString(jsonString);
+                        setSavedCorrect(true);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        writer.close();
+                        fileStream.close();
+                        setSaveError(true);
+                        return "Exception";
+                    }
+                } catch (final Exception e) {
                     e.printStackTrace();
-                    writer.close();
-                    setSaveError(true);
                     return "Exception";
                 }
-            } catch (final Exception e) {
-                e.printStackTrace();
-                return "Exception";
+            } catch (ParseException e) {
+                System.out.println("JSON wrong");
+                setJsonCorrect(false);
+                setJsonConfigString(jsonString);
             }
             return "OK";
         }
@@ -210,4 +217,13 @@ public class JsonPipelineConfiguration {
     public void setJsonConfig(Object jsonConfig) {
         this.jsonConfig = jsonConfig;
     }
+
+    public boolean isSavedCorrect() {
+        return isSavedCorrect;
+    }
+
+    public void setSavedCorrect(boolean savedCorrect) {
+        isSavedCorrect = savedCorrect;
+    }
+
 }
