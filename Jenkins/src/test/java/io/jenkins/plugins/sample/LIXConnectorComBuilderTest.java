@@ -24,7 +24,7 @@ public class LIXConnectorComBuilderTest {
         project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
         LIXConnectorComBuilder testBuilder = new LIXConnectorComBuilder();
-        testBuilder.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
+        testBuilder.setLxmanifestpath("Please specify this path in the plugin configuration. This field will then be filled correctly after the first run.");
         jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
@@ -36,7 +36,8 @@ public class LIXConnectorComBuilderTest {
         project = jenkins.configRoundtrip(project);
 
         LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
-        lhs.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
+        //lhs.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
+        lhs.setLxmanifestpath("Please specify this path in the plugin configuration. This field will then be filled correctly after the first run.");
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 
@@ -49,7 +50,7 @@ public class LIXConnectorComBuilderTest {
         project.getBuildersList().add(builder);
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-        jenkins.assertLogContains("Your manifest path is " + lxManifestPath, build);
+        jenkins.assertLogContains("Path to the manifest wasn't found", build);
     }
 
     @Test
@@ -63,7 +64,8 @@ public class LIXConnectorComBuilderTest {
                 + "}";
         job.setDefinition(new CpsFlowDefinition(pipelineScript, true));
         WorkflowRun completedBuild = jenkins.assertBuildStatusSuccess(job.scheduleBuild2(0));
-        String expectedString = "Your manifest path is " + lxManifestPath + "!";
+        // String expectedString = "Your manifest path is " + lxManifestPath + "!";
+        String expectedString = "Path to the manifest wasn't found";
         jenkins.assertLogContains(expectedString, completedBuild);
     }
 

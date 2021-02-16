@@ -4,10 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -34,6 +31,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
+
     }
 
     @DataBoundSetter
@@ -61,8 +59,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
         if (getUseleanixconnector()) {
-            LeanIXLogAction logAction = new LeanIXLogAction(lxmanifestpath);
-            run.addAction(logAction);
+            boolean configFound = false;
+
 
             Job job = run.getParent();
             JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
@@ -74,14 +72,22 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                         JSONObject pipeConfJson = (JSONObject) pipeConf;
                         JSONArray pipelines = (JSONArray) pipeConfJson.get("pipelines");
                         if (pipelines.contains(job.getName())) {
+                            configFound = true;
                             setLxmanifestpath(pipeConfJson.get("path").toString());
                         }
                     }
                 }
-            } else {
-                logAction.setLogMessage("Path to the manifest wasn't found. Please check your configuration!");
             }
-            listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
+            if (!configFound) {
+                LeanIXLogAction logAction = new LeanIXLogAction("Path to the manifest wasn't found. Please check your configuration!");
+                run.addAction(logAction);
+                listener.getLogger().println("Path to the manifest wasn't found. Please check your configuration!");
+                setLxmanifestpath("Path to the manifest wasn't found. Please check your configuration!");
+            } else {
+                listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
+                LeanIXLogAction logAction = new LeanIXLogAction(lxmanifestpath);
+                run.addAction(logAction);
+            }
         }
     }
 
@@ -95,6 +101,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value)
                 throws IOException, ServletException {
+
+            Jenkins jenkins = Jenkins.get();
+            this.getDescriptorUrl();
+
+
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
             if (value.length() < 2)
