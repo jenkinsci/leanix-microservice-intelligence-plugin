@@ -60,7 +60,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         if (getUseleanixconnector()) {
             boolean configFound = false;
-
+            LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIx-Configuration!");
 
             Job job = run.getParent();
             JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
@@ -79,15 +79,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 }
             }
             if (!configFound) {
-                LeanIXLogAction logAction = new LeanIXLogAction("Path to the manifest wasn't found. Please check your configuration!");
-                run.addAction(logAction);
+                logAction.setLxManifestPath("Path to the manifest wasn't found. Please check your configuration!");
                 listener.getLogger().println("Path to the manifest wasn't found. Please check your configuration!");
                 setLxmanifestpath("Path to the manifest wasn't found. Please check your configuration!");
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
-                LeanIXLogAction logAction = new LeanIXLogAction(lxmanifestpath);
-                run.addAction(logAction);
+                logAction.setLxManifestPath(lxmanifestpath);
             }
+            run.addAction(logAction);
         }
     }
 

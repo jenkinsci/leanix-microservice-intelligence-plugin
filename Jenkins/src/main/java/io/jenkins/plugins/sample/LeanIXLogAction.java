@@ -1,6 +1,7 @@
 package io.jenkins.plugins.sample;
 
 import hudson.model.Run;
+import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 
 public class LeanIXLogAction implements RunAction2 {
@@ -8,7 +9,6 @@ public class LeanIXLogAction implements RunAction2 {
     private String lxManifestPath;
     private transient Run run;
 
-    private String logMessage;
 
     @Override
     public void onAttached(Run<?, ?> run) {
@@ -22,12 +22,12 @@ public class LeanIXLogAction implements RunAction2 {
 
     @Override
     public String getIconFileName() {
-        return "document.png";
+        return Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/images/logo_leanix.png";
     }
 
     @Override
     public String getDisplayName() {
-        return "LeanIXMILog";
+        return "LeanIX-MI-Log";
     }
 
     @Override
@@ -47,12 +47,8 @@ public class LeanIXLogAction implements RunAction2 {
         return lxManifestPath;
     }
 
-    public String getLogMessage() {
-        return logMessage;
-    }
-
-    public void setLogMessage(String logMessage) {
-        this.logMessage = logMessage;
+    public void setLxManifestPath(String lxManifestPath) {
+        this.lxManifestPath = lxManifestPath;
     }
 
 }

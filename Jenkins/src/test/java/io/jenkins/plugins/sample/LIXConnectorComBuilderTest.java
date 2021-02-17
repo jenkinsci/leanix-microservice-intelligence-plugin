@@ -15,7 +15,7 @@ public class LIXConnectorComBuilderTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    final String lxManifestPath = "/lx-manifest.yml";
+    final String lxManifestPath = "Please specify this path in the plugin configuration. This field will then be filled correctly after the next run.";
 
     @Test
     public void testConfigRoundtrip() throws Exception {
@@ -24,7 +24,7 @@ public class LIXConnectorComBuilderTest {
         project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
         LIXConnectorComBuilder testBuilder = new LIXConnectorComBuilder();
-        testBuilder.setLxmanifestpath("Please specify this path in the plugin configuration. This field will then be filled correctly after the first run.");
+        testBuilder.setLxmanifestpath(lxManifestPath);
         jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
@@ -37,7 +37,7 @@ public class LIXConnectorComBuilderTest {
 
         LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
         //lhs.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
-        lhs.setLxmanifestpath("Please specify this path in the plugin configuration. This field will then be filled correctly after the first run.");
+        lhs.setLxmanifestpath(lxManifestPath);
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 

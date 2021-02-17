@@ -37,7 +37,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
         if (FormApply.isApply(request)) {
             jsonPipelineConfiguration = new JsonPipelineConfiguration();
 
-            FormApply.success("../").generateResponse(request, response, jsonPipelineConfiguration.getJsonConfigString());
+            FormApply.applyResponse("location.reload();").generateResponse(request, response, null);
         } else {
 
             JSONObject form = request.getSubmittedForm();
