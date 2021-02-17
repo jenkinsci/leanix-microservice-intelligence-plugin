@@ -7,8 +7,6 @@ import hudson.util.FormApply;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -26,7 +24,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
 
     public JsonPipelineConfiguration getJsonPipelineConfiguration() {
         if (jsonPipelineConfiguration == null || jsonPipelineConfiguration.getJsonConfigString() == null) {
-            jsonPipelineConfiguration = new JsonPipelineConfiguration();
+            jsonPipelineConfiguration = createNewJsonPipelineConfiguration();
         }
         return jsonPipelineConfiguration;
     }
@@ -35,7 +33,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
     public void doSaveAndClearConfig(final StaplerRequest request, final StaplerResponse response) throws Exception {
 
         if (FormApply.isApply(request)) {
-            jsonPipelineConfiguration = new JsonPipelineConfiguration();
+            jsonPipelineConfiguration = createNewJsonPipelineConfiguration();
 
             FormApply.applyResponse("location.reload();").generateResponse(request, response, null);
         } else {
@@ -53,6 +51,14 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
         }
     }
 
+    // we need this method to prettify the JSON - maybe one day only use one library for JSON!
+    private JsonPipelineConfiguration createNewJsonPipelineConfiguration(){
+        jsonPipelineConfiguration = new JsonPipelineConfiguration();
+        JSONObject configObj = JSONObject.fromObject(jsonPipelineConfiguration.getJsonConfigString());
+        String configString = configObj.toString(4);
+        jsonPipelineConfiguration.setJsonConfigString(configString);
+        return jsonPipelineConfiguration;
+    }
 
     public String getIconFileName() {
         return Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/images/logo_leanix.png";
