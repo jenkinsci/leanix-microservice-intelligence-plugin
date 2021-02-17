@@ -25,7 +25,8 @@
                 </table>
                 <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px">
                     <j:if test="${!it.jsonPipelineConfiguration.jsonCorrect}">
-                        There seems to be an error in your JSON structure, please review it before pressing "save" again.
+                        There seems to be an error in your JSON structure, please review it before pressing "save"
+                        again.
                     </j:if>
                 </div>
 
@@ -46,6 +47,25 @@
 
                     <f:apply value="Reload Saved File"/>
                 </div>
+
+            </f:form>
+            <br/>
+            <div style="margin-top: 40px; margin-bottom: 20px;">
+                <h3>LeanIX API - Token</h3>
+            </div>
+            <f:form name="apitoken" method="POST" action="saveApiToken">
+
+                <table width="800">
+                    <tr>
+                        <td >
+                            <f:entry field="apiToken">
+                                <f:password/>
+                            </f:entry>
+                        </td>
+                    </tr>
+                </table>
+
+                <f:submit value="Save Api-Token" name="saveapitoken"/>
 
             </f:form>
 

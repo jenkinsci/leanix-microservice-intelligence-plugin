@@ -8,6 +8,7 @@ import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSON;
@@ -19,8 +20,11 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Base64;
+import java.util.stream.Collectors;
 
 
 @Extension
@@ -59,6 +63,9 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
         if (getUseleanixconnector()) {
+
+            String jwtToken = getJWTToken();
+
             boolean configFound = false;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIx-Configuration!");
 
@@ -87,6 +94,34 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 logAction.setLxManifestPath(lxmanifestpath);
             }
             run.addAction(logAction);
+        }
+    }
+
+    private String getJWTToken() {
+
+        // test for the use of API-Token and requesting JWT-Token
+        String apiToken = SettingsPanel.getApiToken().getPlainText();
+        try {
+            URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
+            String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes());
+
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Authorization", "Basic " + encoding);
+            String postData = "grant_type=client_credentials";
+            connection.setRequestProperty("Content-length",
+                    String.valueOf(postData.length()));
+            connection.setDoOutput(true);
+            DataOutputStream output = new DataOutputStream(connection.getOutputStream());
+            output.writeBytes(postData);
+            output.close();
+            InputStream content = connection.getInputStream();
+            BufferedReader in =
+                    new BufferedReader(new InputStreamReader(content));
+            return in.lines().collect(Collectors.joining());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return e.toString();
         }
     }
 

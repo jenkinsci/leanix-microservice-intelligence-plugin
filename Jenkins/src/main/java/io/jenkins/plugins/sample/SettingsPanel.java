@@ -4,6 +4,7 @@ package io.jenkins.plugins.sample;
 import hudson.Extension;
 import hudson.model.*;
 import hudson.util.FormApply;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -19,6 +20,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*/ {
 
 
+    private static Secret apiToken;
     private JsonPipelineConfiguration jsonPipelineConfiguration;
 
 
@@ -51,8 +53,17 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
         }
     }
 
+    public void doSaveApiToken(final StaplerRequest request, final StaplerResponse response) throws Exception {
+
+        JSONObject form = request.getSubmittedForm();
+        Object tokenObject = form.get("apiToken");
+        setApiToken(Secret.fromString(tokenObject.toString()));
+        request.bindJSON(this, form);
+        response.sendRedirect("");
+    }
+
     // we need this method to prettify the JSON - maybe one day only use one library for JSON!
-    private JsonPipelineConfiguration createNewJsonPipelineConfiguration(){
+    private JsonPipelineConfiguration createNewJsonPipelineConfiguration() {
         jsonPipelineConfiguration = new JsonPipelineConfiguration();
         JSONObject configObj = JSONObject.fromObject(jsonPipelineConfiguration.getJsonConfigString());
         String configString = configObj.toString(4);
@@ -70,6 +81,14 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
 
     public String getUrlName() {
         return "lix-mi-discovery";
+    }
+
+    public static Secret getApiToken() {
+        return apiToken;
+    }
+
+    public static void setApiToken(Secret apiToken) {
+        SettingsPanel.apiToken = apiToken;
     }
 
 /*
@@ -103,7 +122,5 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
 
     // get all the jobs via Rest API:
     // http://jenkins_url:port/api/json?tree=jobs[name,url]
-
-
 }
 
