@@ -20,10 +20,10 @@ public class JsonPipelineConfiguration {
     private String customFilePath;
     private String customFileDirectory;
     private static final String jsonIncorrectWarning = "There seems to be an error in your JSON string, please check it.";
-    private static final String saveError = "An error occurred while saving. Please try again.";
+    private static final String saveErrorString = "An error occurred while saving. Please try again.";
     private boolean jsonCorrect = true;
-    private boolean isSaveError = false;
-    private boolean isSavedCorrect = false;
+    private boolean saveError = false;
+    private boolean savedCorrectly = false;
 
 
     public JsonPipelineConfiguration() {
@@ -63,7 +63,7 @@ public class JsonPipelineConfiguration {
     }
 
     public String saveConfiguration(String jsonString) {
-        setSavedCorrect(false);
+        setSavedCorrectly(false);
 
         //check, if directory and file exist
         if (checkCustomFileDir()) {
@@ -102,7 +102,7 @@ public class JsonPipelineConfiguration {
                         writer.flush();
                         writer.close();
                         setJsonConfigString(jsonString);
-                        setSavedCorrect(true);
+                        setSavedCorrectly(true);
                     } catch (IOException e) {
                         e.printStackTrace();
                         writer.close();
@@ -189,11 +189,11 @@ public class JsonPipelineConfiguration {
         return jsonIncorrectWarning;
     }
 
-    public String getSaveError() {
-        return saveError;
+    public String getSaveErrorString() {
+        return saveErrorString;
     }
 
-    public boolean isJsonCorrect() {
+    public boolean getJsonCorrect() {
         return jsonCorrect;
     }
 
@@ -201,12 +201,12 @@ public class JsonPipelineConfiguration {
         this.jsonCorrect = jsonCorrect;
     }
 
-    public boolean isSaveError() {
-        return isSaveError;
+    public boolean getSaveError() {
+        return saveError;
     }
 
     public void setSaveError(boolean saveError) {
-        isSaveError = saveError;
+        this.saveError = saveError;
     }
 
 
@@ -218,12 +218,12 @@ public class JsonPipelineConfiguration {
         this.jsonConfig = jsonConfig;
     }
 
-    public boolean isSavedCorrect() {
-        return isSavedCorrect;
+    public boolean getSavedCorrectly() {
+        return savedCorrectly;
     }
 
-    public void setSavedCorrect(boolean savedCorrect) {
-        isSavedCorrect = savedCorrect;
+    public void setSavedCorrectly(boolean savedCorrectly) {
+        this.savedCorrectly = savedCorrectly;
     }
 
 }

@@ -23,24 +23,25 @@
                     </tr>
 
                 </table>
-                <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px">
-                    <j:if test="${!it.jsonPipelineConfiguration.jsonCorrect}">
-                        There seems to be an error in your JSON structure, please review it before pressing "save"
-                        again.
-                    </j:if>
-                </div>
-
                 <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px;">
-                    <j:if test="${it.jsonPipelineConfiguration.isSaveError}">
-                        There was an error while saving, please try again!
+                    <j:if test="${it.jsonPipelineConfiguration.saveError}">
+                        ${it.jsonPipelineConfiguration.saveErrorString}
                     </j:if>
                 </div>
 
                 <div style="color:green; font-size: large; margin-top: 20px; margin-bottom: 20px;">
-                    <j:if test="${it.jsonPipelineConfiguration.isSavedCorrect}">
+                    <j:if test="${it.jsonPipelineConfiguration.savedCorrectly}">
                         Configuration saved!
                     </j:if>
                 </div>
+
+                <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px">
+                    <j:if test="${!it.jsonPipelineConfiguration.jsonCorrect}">
+                        ${it.jsonPipelineConfiguration.jsonIncorrectWarning}
+                    </j:if>
+                </div>
+
+
 
                 <div style="float:left">
                     <f:submit value="Save" name="save"/>
@@ -50,16 +51,16 @@
 
             </f:form>
             <br/>
-            <div style="margin-top: 40px; margin-bottom: 20px;">
+            <div style="margin-top: 80px; margin-bottom: 20px;">
                 <h3>LeanIX API - Token</h3>
             </div>
-            <f:form name="apitoken" method="POST" action="saveApiToken">
+            <f:form name="API-Token" method="POST" action="saveApiToken">
 
                 <table width="800">
                     <tr>
-                        <td >
-                            <f:entry field="apiToken">
-                                <f:password/>
+                        <td>
+                            <f:entry field="apitoken">
+                                <f:password value="${it.apitoken}"/>
                             </f:entry>
                         </td>
                     </tr>
@@ -68,6 +69,11 @@
                 <f:submit value="Save Api-Token" name="saveapitoken"/>
 
             </f:form>
+            <div style="color:green; font-size: large; margin-top: 20px; margin-bottom: 20px;">
+                <j:if test="${it.tokenSaved}">
+                    The token was saved correctly!
+                </j:if>
+            </div>
 
         </l:main-panel>
     </l:layout>

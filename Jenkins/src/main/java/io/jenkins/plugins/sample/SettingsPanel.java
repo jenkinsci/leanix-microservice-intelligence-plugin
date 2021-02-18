@@ -20,8 +20,13 @@ import org.kohsuke.stapler.StaplerResponse;
 public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*/ {
 
 
-    private static Secret apiToken;
+    private Secret apitoken;
     private JsonPipelineConfiguration jsonPipelineConfiguration;
+    private boolean tokenSaved = false;
+
+    public SettingsPanel(){
+        apitoken = LIXConnectorComBuilder.DescriptorImpl.getApitoken();
+    }
 
 
     public JsonPipelineConfiguration getJsonPipelineConfiguration() {
@@ -45,8 +50,8 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
             JSONArray a = (JSONArray) o;
             Object formContent = a.get(0);
             jsonPipelineConfiguration.saveConfiguration(formContent.toString());
-            if (jsonPipelineConfiguration.isJsonCorrect() && !jsonPipelineConfiguration.isSaveError()) {
-                response.sendRedirect(request.getContextPath());
+            if (jsonPipelineConfiguration.getJsonCorrect() && !jsonPipelineConfiguration.getSaveError()) {
+                response.sendRedirect("");
             } else {
                 response.sendRedirect("");
             }
@@ -54,11 +59,12 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
     }
 
     public void doSaveApiToken(final StaplerRequest request, final StaplerResponse response) throws Exception {
-
         JSONObject form = request.getSubmittedForm();
-        Object tokenObject = form.get("apiToken");
-        setApiToken(Secret.fromString(tokenObject.toString()));
+        Object tokenObject = form.get("apitoken");
+        setApitoken(Secret.fromString(tokenObject.toString()));
+        LIXConnectorComBuilder.DescriptorImpl.setApitoken(getApitoken());
         request.bindJSON(this, form);
+        setTokenSaved(true);
         response.sendRedirect("");
     }
 
@@ -66,7 +72,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
     private JsonPipelineConfiguration createNewJsonPipelineConfiguration() {
         jsonPipelineConfiguration = new JsonPipelineConfiguration();
         JSONObject configObj = JSONObject.fromObject(jsonPipelineConfiguration.getJsonConfigString());
-        String configString = configObj.toString(4);
+        String configString = configObj.toString(3);
         jsonPipelineConfiguration.setJsonConfigString(configString);
         return jsonPipelineConfiguration;
     }
@@ -83,12 +89,20 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
         return "lix-mi-discovery";
     }
 
-    public static Secret getApiToken() {
-        return apiToken;
+    public Secret getApitoken() {
+        return apitoken;
     }
 
-    public static void setApiToken(Secret apiToken) {
-        SettingsPanel.apiToken = apiToken;
+    public void setApitoken(Secret apitoken) {
+        apitoken = apitoken;
+    }
+
+    public boolean getTokenSaved() {
+        return tokenSaved;
+    }
+
+    public void setTokenSaved(boolean tokenSaved) {
+        this.tokenSaved = tokenSaved;
     }
 
 /*

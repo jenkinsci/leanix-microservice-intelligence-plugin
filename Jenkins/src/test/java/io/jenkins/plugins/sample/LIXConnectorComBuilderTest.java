@@ -15,7 +15,7 @@ public class LIXConnectorComBuilderTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    final String lxManifestPath = "Please specify this path in the plugin configuration. This field will then be filled correctly after the next run.";
+    final String lxManifestPath = "Please specify this path in the plugin configuration.";
 
     @Test
     public void testConfigRoundtrip() throws Exception {

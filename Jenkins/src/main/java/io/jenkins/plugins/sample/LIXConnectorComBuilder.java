@@ -64,7 +64,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         if (getUseleanixconnector()) {
 
-            String jwtToken = getJWTToken();
+            // String jwtToken = getJWTToken();
 
             boolean configFound = false;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIx-Configuration!");
@@ -100,10 +100,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String getJWTToken() {
 
         // test for the use of API-Token and requesting JWT-Token
-        String apiToken = SettingsPanel.getApiToken().getPlainText();
+       String apiTokenString = "";
+        Secret apiToken = ((LIXConnectorComBuilder.DescriptorImpl)getDescriptor()).getApitoken();
+        if (apiToken != null) {
+            apiTokenString = apiToken.getPlainText();
+        }
         try {
             URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
-            String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes());
+            String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiTokenString).getBytes());
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
@@ -131,6 +135,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
+        private static Secret apitoken;
 
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value)
@@ -148,6 +153,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 throws IOException, ServletException {
             System.out.println("here");
             return FormValidation.ok();
+        }
+
+        public static Secret getApitoken() {
+            return apitoken;
+        }
+
+        public static void setApitoken(Secret apitoken) {
+            DescriptorImpl.apitoken = apitoken;
         }
 
         @Override
