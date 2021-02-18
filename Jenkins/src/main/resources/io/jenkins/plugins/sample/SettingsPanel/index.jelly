@@ -1,0 +1,81 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+    <l:layout title="LeanIX-Microservice-Discovery" norefresh="true">
+        <l:side-panel>
+            <st:include page="sidepanel.jelly" optional="true"/>
+        </l:side-panel>
+        <l:main-panel>
+
+            <h1>${it.displayName}</h1>
+
+            <f:form name="jsonArea" method="POST" action="saveAndClearConfig">
+                <table cellpadding="4" cellspacing="4">
+                    <tr>
+                        <td>
+                            <h2>Pipeline Configuration in JSON format</h2>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="800">
+                            <f:textarea codemirror-mode="javascript" codemirror-config="json: true"
+                                        value="${it.jsonPipelineConfiguration.jsonConfigString}"/>
+                        </td>
+                    </tr>
+
+                </table>
+                <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px;">
+                    <j:if test="${it.jsonPipelineConfiguration.saveError}">
+                        ${it.jsonPipelineConfiguration.saveErrorString}
+                    </j:if>
+                </div>
+
+                <div style="color:green; font-size: large; margin-top: 20px; margin-bottom: 20px;">
+                    <j:if test="${it.jsonPipelineConfiguration.savedCorrectly}">
+                        Configuration saved!
+                    </j:if>
+                </div>
+
+                <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px">
+                    <j:if test="${!it.jsonPipelineConfiguration.jsonCorrect}">
+                        ${it.jsonPipelineConfiguration.jsonIncorrectWarning}
+                    </j:if>
+                </div>
+
+
+
+                <div style="float:left">
+                    <f:submit value="Save" name="save"/>
+
+                    <f:apply value="Reload Saved File"/>
+                </div>
+
+            </f:form>
+            <br/>
+            <div style="margin-top: 80px; margin-bottom: 20px;">
+                <h3>LeanIX API - Token</h3>
+            </div>
+            <f:form name="API-Token" method="POST" action="saveApiToken">
+
+                <table width="800">
+                    <tr>
+                        <td>
+                            <f:entry field="apitoken">
+                                <f:password value="${it.apitoken}"/>
+                            </f:entry>
+                        </td>
+                    </tr>
+                </table>
+
+                <f:submit value="Save Api-Token" name="saveapitoken"/>
+
+            </f:form>
+            <div style="color:green; font-size: large; margin-top: 20px; margin-bottom: 20px;">
+                <j:if test="${it.tokenSaved}">
+                    The token was saved correctly!
+                </j:if>
+            </div>
+
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
+

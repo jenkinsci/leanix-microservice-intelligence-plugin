@@ -1,12 +1,12 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="${%LogMessage}" field="logMessage">
-        <f:textbox />
+    <f:entry title="${%LeanIX-Manifest-Path (readonly)}" field="lxmanifestpath">
+        <f:readOnlyTextbox default="Please specify this path in the plugin configuration." />
     </f:entry>
-    <f:advanced>
-        <f:entry title="${%French}" field="useFrench"
-                 description="${%FrenchDescr}">
-            <f:checkbox />
+<!--    <f:advanced>-->
+        <f:entry title="${%Use LeanIX Connector}" field="useleanixconnector"
+                 description="${%LeanIXConnectorDescr}">
+            <f:checkbox default="${descriptor.defaultUseLeanIXConnector}" />
         </f:entry>
-    </f:advanced>
+<!--    </f:advanced>-->
 </j:jelly>

@@ -15,49 +15,42 @@ public class LIXConnectorComBuilderTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    final String logMessage = "Bobby";
+    final String lxManifestPath = "Please specify this path in the plugin configuration.";
 
     @Test
     public void testConfigRoundtrip() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        project.getBuildersList().add(new LIXConnectorComBuilder(logMessage));
+        LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
+        project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
-        jenkins.assertEqualDataBoundBeans(new LIXConnectorComBuilder(logMessage), project.getBuildersList().get(0));
+        LIXConnectorComBuilder testBuilder = new LIXConnectorComBuilder();
+        testBuilder.setLxmanifestpath(lxManifestPath);
+        jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
     @Test
-    public void testConfigRoundtripFrench() throws Exception {
+    public void testConfigRoundtripUseLeanIXConnector() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        LIXConnectorComBuilder builder = new LIXConnectorComBuilder(logMessage);
-        builder.setUseFrench(true);
+        LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
         project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
 
-        LIXConnectorComBuilder lhs = new LIXConnectorComBuilder(logMessage);
-        lhs.setUseFrench(true);
+        LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
+        //lhs.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
+        lhs.setLxmanifestpath(lxManifestPath);
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 
     @Test
     public void testBuild() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        LIXConnectorComBuilder builder = new LIXConnectorComBuilder(logMessage);
+        LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
+        builder.setLxmanifestpath("/lx-manifest.yml");
+        builder.setUseleanixconnector(true);
         project.getBuildersList().add(builder);
 
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-        jenkins.assertLogContains("Hello, " + logMessage, build);
-    }
-
-    @Test
-    public void testBuildFrench() throws Exception {
-
-        FreeStyleProject project = jenkins.createFreeStyleProject();
-        LIXConnectorComBuilder builder = new LIXConnectorComBuilder(logMessage);
-        builder.setUseFrench(true);
-        project.getBuildersList().add(builder);
-
-        FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-        jenkins.assertLogContains("Bonjour, " + logMessage, build);
+        jenkins.assertLogContains("Path to the manifest wasn't found", build);
     }
 
     @Test
@@ -67,11 +60,12 @@ public class LIXConnectorComBuilderTest {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, "test-scripted-pipeline");
         String pipelineScript
                 = "node {\n"
-                + "  greet '" + logMessage + "'\n"
+                + "  leanIXMicroserviceDiscovery lxmanifestpath: '/lx-manifest.yml', useleanixconnector: true" + "\n"
                 + "}";
         job.setDefinition(new CpsFlowDefinition(pipelineScript, true));
         WorkflowRun completedBuild = jenkins.assertBuildStatusSuccess(job.scheduleBuild2(0));
-        String expectedString = "Hello, " + logMessage + "!";
+        // String expectedString = "Your manifest path is " + lxManifestPath + "!";
+        String expectedString = "Path to the manifest wasn't found";
         jenkins.assertLogContains(expectedString, completedBuild);
     }
 
