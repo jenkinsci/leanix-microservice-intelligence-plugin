@@ -42,7 +42,6 @@
                 </div>
 
 
-
                 <div style="float:left">
                     <f:submit value="Save" name="save"/>
 
@@ -52,28 +51,45 @@
             </f:form>
             <br/>
             <div style="margin-top: 80px; margin-bottom: 20px;">
-                <h3>LeanIX API - Token</h3>
+                <h3>LeanIX API</h3>
             </div>
             <f:form name="API-Token" method="POST" action="saveApiToken">
 
                 <table width="800">
                     <tr>
                         <td>
-                            <f:entry field="apitoken">
+
+                            <f:entry title="${%LeanIX Host}" field="lixhost">
+                                <f:textbox value="${it.lixhost}"/>
+                            </f:entry>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <f:entry title="${%LeanIX Token}" field="apitoken">
                                 <f:password value="${it.apitoken}"/>
                             </f:entry>
                         </td>
                     </tr>
                 </table>
 
+                <div style="color:green; font-size: large; margin-top: 20px; margin-bottom: 20px;">
+                    <j:if test="${it.tokennhostsaved}">
+                        Host and Token saved!
+                    </j:if>
+                </div>
+
+                <div style="color:red; font-size: large; margin-top: 20px; margin-bottom: 20px;">
+                    <j:if test="${it.lixtokenhostempty}">
+                        LeanIX Host and API Token must not be empty! Please correct your input.
+                    </j:if>
+                </div>
+
+
                 <f:submit value="Save Api-Token" name="saveapitoken"/>
 
             </f:form>
-            <div style="color:green; font-size: large; margin-top: 20px; margin-bottom: 20px;">
-                <j:if test="${it.tokenSaved}">
-                    The token was saved correctly!
-                </j:if>
-            </div>
+
 
         </l:main-panel>
     </l:layout>

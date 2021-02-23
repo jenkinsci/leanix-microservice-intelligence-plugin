@@ -4,6 +4,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.*;
+import hudson.scm.SCM;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -13,17 +15,23 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.tasks.SimpleBuildStep;
+import jenkins.triggers.SCMTriggerItem;
+import net.sf.json.JSON;
 import org.jenkinsci.Symbol;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.stream.Collectors;
@@ -72,7 +80,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
             Job job = run.getParent();
             JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
-            jsonPipelineConfig.readConfiguration();
             JSONObject jsonConfig = (JSONObject) jsonPipelineConfig.getJsonConfig();
             if (jsonConfig != null) {
                 JSONArray lixConfigurations = (JSONArray) jsonConfig.get("leanIXConfigurations");
@@ -95,6 +102,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
             }
+
+            // dealing with the SCM (see ManifestFile - Class)
+
+/*            SCMTriggerItem s = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
+            if (s != null) {
+                ArrayList<SCM> scms = new ArrayList<>(s.getSCMs());
+            }*/
+
             run.addAction(logAction);
         }
     }
@@ -107,6 +122,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             apiTokenString = apiToken.getPlainText();
         }
         try {
+            //TODO: Deal with the host here (see UI of Settings panel)
             URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
             String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiTokenString).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -145,9 +161,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             if (value.length() < 2)
                 return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
             return FormValidation.ok();
+
         }
 
-        public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector) {
+        public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector)
+                throws IOException, ServletException {
             System.out.println("here");
             return FormValidation.ok();
         }
@@ -171,4 +189,5 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         }
 
     }
+
 }

@@ -26,6 +26,7 @@ public class JsonPipelineConfiguration {
 
 
     public JsonPipelineConfiguration() {
+        readConfiguration();
     }
 
     public void readConfiguration() {
@@ -145,6 +146,7 @@ public class JsonPipelineConfiguration {
 
     // @SuppressFBWarnings: Error in the spotbugs version jenkins uses, if updated the annotation can maybe be removed
     // https://github.com/spotbugs/spotbugs/issues/518
+    // TODO: Check the right permissions of the user with mkdirs() and catch File-Exception
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
     private void checkCustomFileDir() {
         File customDir = new File(customFileDirectory);

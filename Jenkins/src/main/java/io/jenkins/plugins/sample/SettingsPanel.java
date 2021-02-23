@@ -6,8 +6,11 @@ import hudson.model.RootAction;
 import hudson.util.FormApply;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.security.ConfidentialStore;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -22,7 +25,9 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
 
     private Secret apitoken;
     private JsonPipelineConfiguration jsonPipelineConfiguration;
-    private boolean tokenSaved = false;
+    private boolean tokennhostsaved = false;
+    private String lixhost = "";
+    private boolean lixtokenhostempty = false;
 
     public SettingsPanel() {
         apitoken = LIXConnectorComBuilder.DescriptorImpl.getApitoken();
@@ -50,29 +55,29 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
             JSONArray a = (JSONArray) o;
             Object formContent = a.get(0);
             jsonPipelineConfiguration.saveConfiguration(formContent.toString());
-           /* if (jsonPipelineConfiguration.getJsonCorrect() && !jsonPipelineConfiguration.getSaveError()) {
-                response.sendRedirect("");
-            } else {
-                response.sendRedirect("");
-            }*/
             response.sendRedirect("");
         }
     }
 
     public void doSaveApiToken(final StaplerRequest request, final StaplerResponse response) throws Exception {
+        setLixtokenhostempty(false);
+        setTokennhostsaved(false);
         JSONObject form = request.getSubmittedForm();
-        Object tokenObject = form.get("apitoken");
-        setApitoken(Secret.fromString(tokenObject.toString()));
-        LIXConnectorComBuilder.DescriptorImpl.setApitoken(getApitoken());
         request.bindJSON(this, form);
-        setTokenSaved(true);
+        Object tokenObject = form.get("apitoken");
+        Object lixHostObject = form.get("lixhost");
+        if (tokenObject.equals("") || lixHostObject.toString().equals("")) {
+            setLixtokenhostempty(true);
+        } else {
+            LIXConnectorComBuilder.DescriptorImpl.setApitoken(getApitoken());
+            setTokennhostsaved(true);
+        }
         response.sendRedirect("");
     }
 
     // we need this method to prettify the JSON - maybe one day only use one library for JSON!
     private JsonPipelineConfiguration createNewJsonPipelineConfiguration() {
         jsonPipelineConfiguration = new JsonPipelineConfiguration();
-        jsonPipelineConfiguration.readConfiguration();
         JSONObject configObj = JSONObject.fromObject(jsonPipelineConfiguration.getJsonConfigString());
         String configString = configObj.toString(3);
         jsonPipelineConfiguration.setJsonConfigString(configString);
@@ -95,16 +100,33 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
         return apitoken;
     }
 
+    @DataBoundSetter
     public void setApitoken(Secret apitoken) {
         this.apitoken = apitoken;
     }
 
-    public boolean getTokenSaved() {
-        return tokenSaved;
+    public boolean getTokennhostsaved() {
+        return tokennhostsaved;
     }
 
-    public void setTokenSaved(boolean tokenSaved) {
-        this.tokenSaved = tokenSaved;
+    public void setTokennhostsaved(boolean tokennhostsaved) {
+        this.tokennhostsaved = tokennhostsaved;
+    }
+
+    public String getLixhost() {
+        return lixhost;
+    }
+
+    public void setLixhost(String lixhost) {
+        this.lixhost = lixhost;
+    }
+
+    public boolean getLixtokenhostempty() {
+        return lixtokenhostempty;
+    }
+
+    public void setLixtokenhostempty(boolean lixtokenhostempty) {
+        this.lixtokenhostempty = lixtokenhostempty;
     }
 
 /*
