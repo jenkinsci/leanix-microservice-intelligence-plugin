@@ -3,13 +3,12 @@ package io.jenkins.plugins.sample;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
-
-import org.json.simple.parser.*;
 
 
 public class JsonPipelineConfiguration {
@@ -27,134 +26,132 @@ public class JsonPipelineConfiguration {
 
 
     public JsonPipelineConfiguration() {
+    }
 
-        if (setFilePathsAndDirectories()) {
-            //JSON parser object to parse read file
-            JSONParser jsonParser = new JSONParser();
+    public void readConfiguration() {
+        Jenkins jenkinsInstance = Jenkins.getInstanceOrNull();
+        if (jenkinsInstance == null)
+            return;
 
+        setFilePathsAndDirectories(jenkinsInstance);
+
+        InputStream inputStream = null;
+        try {
+            if (new File(customFilePath).exists()) {
+                inputStream = new FileInputStream(customFilePath);
+                // need to use the way over UTF-8 because of different platforms and findbugs
+
+            } else {
+
+                URL defaultUrl = new URL(defaultFilePath);
+                inputStream = defaultUrl.openStream();
+            }
+
+            readFrom(inputStream);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            jsonConfigString = "";
+        } finally {
             try {
-                InputStream inputStream;
-
-                if (new File(customFilePath).exists()) {
-                    inputStream = new FileInputStream(customFilePath);
-                    // need to use the way over UTF-8 because of different platforms and findbugs
-
-                } else {
-
-                    URL defaultUrl = new URL(defaultFilePath);
-                    inputStream = defaultUrl.openStream();
-                }
-
-                Reader fileReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                //Read JSON file
-                Object obj = jsonParser.parse(fileReader);
-                jsonConfig = obj;
-                jsonConfigString = obj.toString().replaceAll("\\\\", "");
-
-            } catch (FileNotFoundException e) {
-
+                if (inputStream != null)
+                    inputStream.close();
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (ParseException e) {
-                e.printStackTrace();
-                jsonConfigString = "";
             }
+
         }
+    }
+
+    public void readFrom(InputStream inputStream) throws IOException, ParseException {
+        JSONParser jsonParser = new JSONParser();
+        Reader fileReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        Object obj = jsonParser.parse(fileReader);
+        jsonConfig = obj;
+        jsonConfigString = obj.toString().replaceAll("\\\\", "");
     }
 
     public String saveConfiguration(String jsonString) {
         setSavedCorrectly(false);
+        checkCustomFileDir();
+        try {
+            File fileCheck = new File(customFilePath);
+            if (fileCheck.createNewFile()) {
+                System.out.println("File created: " + fileCheck.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+            return "Exception";
+        }
 
-        //check, if directory and file exist
-        if (checkCustomFileDir()) {
+        try {
+            // check if JSON can be converted to object
+            isJsonObject(jsonString);
 
-            try {
-
-                File fileCheck = new File(customFilePath);
-                if (fileCheck.createNewFile()) {
-                    System.out.println("File created: " + fileCheck.getName());
-                } else {
-                    System.out.println("File already exists.");
+            //create file writer
+            try (
+                    FileOutputStream fileStream = new FileOutputStream(customFilePath);
+                    OutputStreamWriter writer = new OutputStreamWriter(fileStream, StandardCharsets.UTF_8)
+            ) {
+                setJsonCorrect(true);
+                setSaveError(false);
+                try {
+                    writeTo(jsonString, writer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    setSaveError(true);
+                    return "Exception";
                 }
-            } catch (IOException e) {
-                System.out.println("An error occurred.");
+            } catch (final Exception e) {
                 e.printStackTrace();
                 return "Exception";
             }
-
-            try {
-                // check JSON and convert it to object
-                JSONParser jsonParser = new JSONParser();
-                Object JSONObj = jsonParser.parse(jsonString);
-
-                //create file writer
-                try (
-                        FileOutputStream fileStream = new FileOutputStream(customFilePath);
-                        OutputStreamWriter writer = new OutputStreamWriter(fileStream, "UTF-8");
-                ) {
-
-                    try {
-                        setJsonCorrect(true);
-                        setSaveError(false);
-
-                        // write to file
-                        writer.write(JSONObj.toString());
-                        writer.flush();
-                        writer.close();
-                        setJsonConfigString(jsonString);
-                        setSavedCorrectly(true);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        writer.close();
-                        fileStream.close();
-                        setSaveError(true);
-                        return "Exception";
-                    }
-                } catch (final Exception e) {
-                    e.printStackTrace();
-                    return "Exception";
-                }
-            } catch (ParseException e) {
-                System.out.println("JSON wrong");
-                setJsonCorrect(false);
-                setJsonConfigString(jsonString);
-            }
-            return "OK";
+        } catch (ParseException e) {
+            System.out.println("JSON wrong");
+            setJsonCorrect(false);
+            setJsonConfigString(jsonString);
         }
-        return "Exception";
+        return "OK";
+    }
+
+    public void isJsonObject(String jsonString) throws ParseException {
+        JSONParser jsonParser = new JSONParser();
+        jsonParser.parse(jsonString);
+    }
+
+    public void writeTo(String jsonString, OutputStreamWriter writer) throws IOException {
+        // write to file
+        writer.write(jsonString);
+        writer.flush();
+        setJsonConfigString(jsonString);
+        setSavedCorrectly(true);
+    }
+
+    private void setFilePathsAndDirectories(Jenkins jenkins) {
+        String url = jenkins.getRootUrl();
+        if (url != null) {
+            setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/jsonpipelineconfiguration/defaultjsonconfig.json");
+        }
+        setCustomFileDirectory(jenkins.getRootDir() + "/jsonPipelineConfiguration");
+        setCustomFilePath(jenkins.getRootDir() + "/jsonPipelineConfiguration/customJsonConfig.json");
     }
 
     // @SuppressFBWarnings: Error in the spotbugs version jenkins uses, if updated the annotation can maybe be removed
     // https://github.com/spotbugs/spotbugs/issues/518
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
-    public boolean checkCustomFileDir() {
+    private void checkCustomFileDir() {
         File customDir = new File(customFileDirectory);
-        try {
-            if (!customDir.exists()) {
-                customDir.mkdirs();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        if (!customDir.exists()) {
+            customDir.mkdirs();
         }
-        return true;
     }
-
-    private boolean setFilePathsAndDirectories() {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-
-        if (jenkins != null) {
-            String url = jenkins.getRootUrl();
-            if (url != null) {
-                setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/jsonpipelineconfiguration/defaultjsonconfig.json");
-            }
-            setCustomFileDirectory(jenkins.getRootDir() + "/jsonPipelineConfiguration");
-            setCustomFilePath(jenkins.getRootDir() + "/jsonPipelineConfiguration/customJsonConfig.json");
-            return true;
-        }
-        return false;
-    }
-
 
     private void setDefaultFilePath(String defaultPath) {
         defaultFilePath = defaultPath;
@@ -162,11 +159,6 @@ public class JsonPipelineConfiguration {
 
     private void setCustomFilePath(String customPath) {
         customFilePath = customPath;
-    }
-
-    private static String getSavingFilePath() {
-
-        return "";
     }
 
     public String getJsonConfigString() {
@@ -185,12 +177,8 @@ public class JsonPipelineConfiguration {
         this.customFileDirectory = customFileDirectory;
     }
 
-    public String getJsonIncorrectWarning() {
-        return jsonIncorrectWarning;
-    }
-
-    public String getSaveErrorString() {
-        return saveErrorString;
+    private static String getSavingFilePath() {
+        return "";
     }
 
     public boolean getJsonCorrect() {
@@ -209,6 +197,13 @@ public class JsonPipelineConfiguration {
         this.saveError = saveError;
     }
 
+    public String getJsonIncorrectWarning() {
+        return jsonIncorrectWarning;
+    }
+
+    public String getSaveErrorString() {
+        return saveErrorString;
+    }
 
     public Object getJsonConfig() {
         return jsonConfig;

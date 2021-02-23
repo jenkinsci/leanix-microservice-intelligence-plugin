@@ -4,14 +4,15 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
-import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
-import net.sf.json.JSON;
 import org.jenkinsci.Symbol;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,6 +24,7 @@ import javax.servlet.ServletException;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
@@ -43,7 +45,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         this.useleanixconnector = useLeanIXConnector;
     }
 
-    @NonNull
     public boolean getUseleanixconnector() {
         return useleanixconnector;
     }
@@ -67,10 +68,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             // String jwtToken = getJWTToken();
 
             boolean configFound = false;
-            LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIx-Configuration!");
+            LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
 
             Job job = run.getParent();
             JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
+            jsonPipelineConfig.readConfiguration();
             JSONObject jsonConfig = (JSONObject) jsonPipelineConfig.getJsonConfig();
             if (jsonConfig != null) {
                 JSONArray lixConfigurations = (JSONArray) jsonConfig.get("leanIXConfigurations");
@@ -98,17 +100,15 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     }
 
     private String getJWTToken() {
-
         // test for the use of API-Token and requesting JWT-Token
-       String apiTokenString = "";
-        Secret apiToken = ((LIXConnectorComBuilder.DescriptorImpl)getDescriptor()).getApitoken();
+        String apiTokenString = "";
+        Secret apiToken = DescriptorImpl.getApitoken();
         if (apiToken != null) {
             apiTokenString = apiToken.getPlainText();
         }
         try {
             URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
-            String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiTokenString).getBytes());
-
+            String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiTokenString).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Authorization", "Basic " + encoding);
@@ -120,9 +120,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             output.writeBytes(postData);
             output.close();
             InputStream content = connection.getInputStream();
-            BufferedReader in =
-                    new BufferedReader(new InputStreamReader(content));
-            return in.lines().collect(Collectors.joining());
+            BufferedReader in = new BufferedReader(new InputStreamReader(content, StandardCharsets.UTF_8));
+            String result = in.lines().collect(Collectors.joining());
+            in.close();
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
             return e.toString();
@@ -138,19 +139,15 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         private static Secret apitoken;
 
 
-        public FormValidation doCheckLxmanifestpath(@QueryParameter String value)
-                throws IOException, ServletException {
-
+        public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
             if (value.length() < 2)
                 return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
             return FormValidation.ok();
-
         }
 
-        public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector)
-                throws IOException, ServletException {
+        public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector) {
             System.out.println("here");
             return FormValidation.ok();
         }
@@ -174,5 +171,4 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         }
 
     }
-
 }

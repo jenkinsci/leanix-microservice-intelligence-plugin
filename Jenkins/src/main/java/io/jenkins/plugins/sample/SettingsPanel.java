@@ -2,7 +2,7 @@ package io.jenkins.plugins.sample;
 
 
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.RootAction;
 import hudson.util.FormApply;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
@@ -24,7 +24,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
     private JsonPipelineConfiguration jsonPipelineConfiguration;
     private boolean tokenSaved = false;
 
-    public SettingsPanel(){
+    public SettingsPanel() {
         apitoken = LIXConnectorComBuilder.DescriptorImpl.getApitoken();
     }
 
@@ -50,11 +50,12 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
             JSONArray a = (JSONArray) o;
             Object formContent = a.get(0);
             jsonPipelineConfiguration.saveConfiguration(formContent.toString());
-            if (jsonPipelineConfiguration.getJsonCorrect() && !jsonPipelineConfiguration.getSaveError()) {
+           /* if (jsonPipelineConfiguration.getJsonCorrect() && !jsonPipelineConfiguration.getSaveError()) {
                 response.sendRedirect("");
             } else {
                 response.sendRedirect("");
-            }
+            }*/
+            response.sendRedirect("");
         }
     }
 
@@ -71,6 +72,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
     // we need this method to prettify the JSON - maybe one day only use one library for JSON!
     private JsonPipelineConfiguration createNewJsonPipelineConfiguration() {
         jsonPipelineConfiguration = new JsonPipelineConfiguration();
+        jsonPipelineConfiguration.readConfiguration();
         JSONObject configObj = JSONObject.fromObject(jsonPipelineConfiguration.getJsonConfigString());
         String configString = configObj.toString(3);
         jsonPipelineConfiguration.setJsonConfigString(configString);
@@ -94,7 +96,7 @@ public class SettingsPanel implements RootAction /*, Describable<SettingsPanel>*
     }
 
     public void setApitoken(Secret apitoken) {
-        apitoken = apitoken;
+        this.apitoken = apitoken;
     }
 
     public boolean getTokenSaved() {
