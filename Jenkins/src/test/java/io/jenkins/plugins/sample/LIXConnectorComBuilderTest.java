@@ -25,6 +25,8 @@ public class LIXConnectorComBuilderTest {
         project = jenkins.configRoundtrip(project);
         LIXConnectorComBuilder testBuilder = new LIXConnectorComBuilder();
         testBuilder.setLxmanifestpath(lxManifestPath);
+        testBuilder.setHostname("");
+        testBuilder.setApitoken("");
         jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
@@ -36,8 +38,9 @@ public class LIXConnectorComBuilderTest {
         project = jenkins.configRoundtrip(project);
 
         LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
-        //lhs.setLxmanifestpath(LIXConnectorComBuilder.DescriptorImpl.defaultLXManifestPath);
         lhs.setLxmanifestpath(lxManifestPath);
+        lhs.setHostname("");
+        lhs.setApitoken("");
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 

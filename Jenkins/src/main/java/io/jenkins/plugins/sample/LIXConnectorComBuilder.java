@@ -4,8 +4,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
-import hudson.scm.SCM;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -13,25 +11,20 @@ import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
 import jenkins.tasks.SimpleBuildStep;
-import jenkins.triggers.SCMTriggerItem;
-import net.sf.json.JSON;
 import org.jenkinsci.Symbol;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.stream.Collectors;
@@ -42,6 +35,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     private String lxmanifestpath;
     private boolean useleanixconnector;
+    private String hostname;
+    private String apitoken;
+    private static final String pathNotFoundMsg = "Path to the manifest wasn't found. Please check your configuration!";
+    private static final String exceptionMsg = "Please check your LeanIX credentials (hostname and apitoken).";
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
@@ -67,13 +64,31 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return lxmanifestpath;
     }
 
+    @DataBoundSetter
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    @DataBoundSetter
+    public void setApitoken(String apitoken) {
+        this.apitoken = apitoken;
+    }
+
+    public String getApitoken() {
+        return apitoken;
+    }
 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
         if (getUseleanixconnector()) {
 
-            // String jwtToken = getJWTToken();
+            String jwtToken = getJWTToken();
+            System.out.println("jwtToken: " + jwtToken);
 
             boolean configFound = false;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
@@ -95,20 +110,13 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 }
             }
             if (!configFound) {
-                logAction.setLxManifestPath("Path to the manifest wasn't found. Please check your configuration!");
-                listener.getLogger().println("Path to the manifest wasn't found. Please check your configuration!");
-                setLxmanifestpath("Path to the manifest wasn't found. Please check your configuration!");
+                logAction.setLxManifestPath(pathNotFoundMsg);
+                listener.getLogger().println(pathNotFoundMsg);
+                setLxmanifestpath(pathNotFoundMsg);
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
             }
-
-            // dealing with the SCM (see ManifestFile - Class)
-
-/*            SCMTriggerItem s = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
-            if (s != null) {
-                ArrayList<SCM> scms = new ArrayList<>(s.getSCMs());
-            }*/
 
             run.addAction(logAction);
         }
@@ -116,15 +124,12 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     private String getJWTToken() {
         // test for the use of API-Token and requesting JWT-Token
-        String apiTokenString = "";
-        Secret apiToken = DescriptorImpl.getApitoken();
-        if (apiToken != null) {
-            apiTokenString = apiToken.getPlainText();
-        }
+        String apiToken = this.getApitoken();
+
         try {
             //TODO: Deal with the host here (see UI of Settings panel)
             URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
-            String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiTokenString).getBytes(StandardCharsets.UTF_8));
+            String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Authorization", "Basic " + encoding);
@@ -135,16 +140,28 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             DataOutputStream output = new DataOutputStream(connection.getOutputStream());
             output.writeBytes(postData);
             output.close();
-            InputStream content = connection.getInputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(content, StandardCharsets.UTF_8));
-            String result = in.lines().collect(Collectors.joining());
-            in.close();
+            BufferedReader in = null;
+            String result;
+            try (InputStream content = connection.getInputStream()) {
+                in = new BufferedReader(new InputStreamReader(content, StandardCharsets.UTF_8));
+                result = in.lines().collect(Collectors.joining());
+            } finally {
+                if (in != null)
+                    in.close();
+            }
             return result;
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
-            return e.toString();
         }
+        return exceptionMsg;
     }
+
 
     @Symbol("leanIXMicroserviceDiscovery")
     @Extension
@@ -152,8 +169,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
-        private static Secret apitoken;
-
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
             if (value.length() == 0)
@@ -170,14 +185,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return FormValidation.ok();
         }
 
-        public static Secret getApitoken() {
-            return apitoken;
-        }
-
-        public static void setApitoken(Secret apitoken) {
-            DescriptorImpl.apitoken = apitoken;
-        }
-
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             return true;
@@ -187,7 +194,5 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         public String getDisplayName() {
             return Messages.LIXConnectorComBuilder_DescriptorImpl_DisplayLXManifestPath();
         }
-
     }
-
 }

@@ -9,4 +9,11 @@
             <f:checkbox default="${descriptor.defaultUseLeanIXConnector}" />
         </f:entry>
 <!--    </f:advanced>-->
+    <f:entry title="${%LeanIX-Hostname}" field="hostname">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%LeanIX-Apitoken}" field="apitoken"
+             description="${%LeanIXCredentialsDescr}">
+        <f:password />
+    </f:entry>
 </j:jelly>
