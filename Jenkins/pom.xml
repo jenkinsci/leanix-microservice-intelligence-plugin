@@ -89,6 +89,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.27</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.26</version>
@@ -110,9 +115,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.23</version>
+            <groupId>com.squareup.okhttp</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>2.7.5</version>
         </dependency>
     </dependencies>
     <dependencyManagement>
@@ -131,6 +136,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <!-- If you want this to appear on the wiki page:
     <developers>
       <developer>
@@ -139,6 +145,7 @@
         <email>bhacker@nowhere.net</email>
       </developer>
     </developers> -->
+
     <!-- Assuming you want to host on @jenkinsci:
     <url>https://wiki.jenkins.io/display/JENKINS/LeanIX_CICD</url>
     <scm>

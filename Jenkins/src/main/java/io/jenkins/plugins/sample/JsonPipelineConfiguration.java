@@ -140,8 +140,8 @@ public class JsonPipelineConfiguration {
         if (url != null) {
             setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/jsonpipelineconfiguration/defaultjsonconfig.json");
         }
-        setCustomFileDirectory(jenkins.getRootDir() + "/jsonPipelineConfiguration");
-        setCustomFilePath(jenkins.getRootDir() + "/jsonPipelineConfiguration/customJsonConfig.json");
+        setCustomFileDirectory(jenkins.getRootDir() + "/leanix/jsonPipelineConfiguration");
+        setCustomFilePath(jenkins.getRootDir() + "/leanix/jsonPipelineConfiguration/customJsonConfig.json");
     }
 
     // @SuppressFBWarnings: Error in the spotbugs version jenkins uses, if updated the annotation can maybe be removed

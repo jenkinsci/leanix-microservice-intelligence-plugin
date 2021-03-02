@@ -6,9 +6,13 @@
             </l:side-panel>
         <l:main-panel>
             <h1>
-                Lean IX Microservice Discovery:
+                Lean IX Microservice Discovery
             </h1>
             <h2 style="color: #2e6c80;">The path to the manifest is: ${it.lxManifestPath} . </h2>
+            <h2 style="margin-top: 50px;">
+                Lean-IX status of this build run:
+            </h2>
+            <h2 style="color: #2e6c80;">${it.result} . </h2>
         </l:main-panel>
     </l:layout>
 </j:jelly>

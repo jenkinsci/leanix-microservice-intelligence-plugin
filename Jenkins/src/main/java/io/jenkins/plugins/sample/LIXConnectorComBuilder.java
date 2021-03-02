@@ -4,17 +4,16 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -87,28 +86,12 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         if (getUseleanixconnector()) {
 
-            String jwtToken = getJWTToken();
-            System.out.println("jwtToken: " + jwtToken);
 
             boolean configFound = false;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
 
             Job job = run.getParent();
-            JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
-            JSONObject jsonConfig = (JSONObject) jsonPipelineConfig.getJsonConfig();
-            if (jsonConfig != null) {
-                JSONArray lixConfigurations = (JSONArray) jsonConfig.get("leanIXConfigurations");
-                for (Object pipeConf : lixConfigurations) {
-                    if (pipeConf instanceof JSONObject) {
-                        JSONObject pipeConfJson = (JSONObject) pipeConf;
-                        JSONArray pipelines = (JSONArray) pipeConfJson.get("pipelines");
-                        if (pipelines.contains(job.getName())) {
-                            configFound = true;
-                            setLxmanifestpath(pipeConfJson.get("path").toString());
-                        }
-                    }
-                }
-            }
+            configFound = findJSONPipelineConfig(job);
             if (!configFound) {
                 logAction.setLxManifestPath(pathNotFoundMsg);
                 listener.getLogger().println(pathNotFoundMsg);
@@ -116,18 +99,55 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
+                ManifestFileHandler manifestFileHandler = new ManifestFileHandler();
+                manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction);
+
+                // If SCM was checked out correctly
+                if (run.getResult() != null && run.getResult() == Result.SUCCESS) {
+                    String jwtToken = getJWTToken();
+                    if (jwtToken != null && !jwtToken.equals("")) {
+                        //TODO: Get correct deployment version and stage
+                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, "1.0.0", "test");
+                        if (responseCode < 200 || responseCode > 308) {
+                            logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
+                        }
+                    } else {
+                        run.setResult(DescriptorImpl.getJobresultchoice());
+                        logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+                    }
+                }
             }
 
             run.addAction(logAction);
         }
     }
 
+    private boolean findJSONPipelineConfig(Job job) {
+        boolean configFound = false;
+        JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
+        JSONObject jsonConfig = (JSONObject) jsonPipelineConfig.getJsonConfig();
+        if (jsonConfig != null) {
+            JSONArray lixConfigurations = (JSONArray) jsonConfig.get("leanIXConfigurations");
+            for (Object pipeConf : lixConfigurations) {
+                if (pipeConf instanceof JSONObject) {
+                    JSONObject pipeConfJson = (JSONObject) pipeConf;
+                    JSONArray pipelines = (JSONArray) pipeConfJson.get("pipelines");
+                    if (pipelines.contains(job.getName())) {
+                        configFound = true;
+                        setLxmanifestpath(pipeConfJson.get("path").toString());
+                    }
+                }
+            }
+        }
+        return configFound;
+    }
+
     private String getJWTToken() {
         // test for the use of API-Token and requesting JWT-Token
         String apiToken = this.getApitoken();
+        String token = "";
 
         try {
-            //TODO: Deal with the host here (see UI of Settings panel)
             URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
             String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -139,17 +159,20 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             connection.setDoOutput(true);
             DataOutputStream output = new DataOutputStream(connection.getOutputStream());
             output.writeBytes(postData);
-            output.close();
             BufferedReader in = null;
-            String result;
+            String collection;
             try (InputStream content = connection.getInputStream()) {
                 in = new BufferedReader(new InputStreamReader(content, StandardCharsets.UTF_8));
-                result = in.lines().collect(Collectors.joining());
+                collection = in.lines().collect(Collectors.joining());
+                JSONObject jsonObject = (JSONObject) JSONValue.parse(collection);
+                token = (String) jsonObject.get("access_token");
             } finally {
                 if (in != null)
-                    in.close();
+                    output.close();
+                in.close();
             }
-            return result;
+            System.out.println(token);
+            return token;
         } catch (ProtocolException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -162,13 +185,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return exceptionMsg;
     }
 
-
     @Symbol("leanIXMicroserviceDiscovery")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
+        private static Result jobresultchoice;
+
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
             if (value.length() == 0)
@@ -176,13 +200,24 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             if (value.length() < 2)
                 return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
             return FormValidation.ok();
-
         }
 
         public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector)
                 throws IOException, ServletException {
             System.out.println("here");
             return FormValidation.ok();
+        }
+
+
+        //only used when toggle for settingspanel is true.
+        private static Secret apitokenpanel;
+
+        public static Secret getApitokenpanel() {
+            return apitokenpanel;
+        }
+
+        public static void setApitokenpanel(Secret apitokenpanel) {
+            DescriptorImpl.apitokenpanel = apitokenpanel;
         }
 
         @Override
@@ -193,6 +228,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         @Override
         public String getDisplayName() {
             return Messages.LIXConnectorComBuilder_DescriptorImpl_DisplayLXManifestPath();
+        }
+
+        public static Result getJobresultchoice() {
+            return jobresultchoice;
+        }
+
+        public static void setJobresultchoice(Result jobresultchoice) {
+            DescriptorImpl.jobresultchoice = jobresultchoice;
         }
     }
 }

@@ -2,11 +2,14 @@ package io.jenkins.plugins.sample;
 
 
 import hudson.Extension;
+import hudson.model.Result;
 import hudson.model.RootAction;
 import hudson.util.FormApply;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -18,9 +21,23 @@ import org.kohsuke.stapler.StaplerResponse;
 @Extension
 public class SettingsPanel implements RootAction {
 
-    private JsonPipelineConfiguration jsonPipelineConfiguration;
+    private boolean toggle = false;
 
-    public SettingsPanel() {}
+    private Secret apitokenpanel;
+    private JsonPipelineConfiguration jsonPipelineConfiguration;
+    private boolean tokennhostsaved = false;
+    private String lixhost = "";
+    private boolean lixtokenhostempty = false;
+    private String jobresultchoice = Result.SUCCESS.toString();
+    private SettingsHandler settingsHandler;
+
+
+    public SettingsPanel() {
+        if (toggle) {
+            apitokenpanel = LIXConnectorComBuilder.DescriptorImpl.getApitokenpanel();
+        }
+        retrieveSettings();
+    }
 
 
     public JsonPipelineConfiguration getJsonPipelineConfiguration() {
@@ -48,13 +65,91 @@ public class SettingsPanel implements RootAction {
         }
     }
 
+    // Only used when toggle for Panel is true.
+    public void doSaveApiTokenInPanel(final StaplerRequest request, final StaplerResponse response) throws Exception {
+        setLixtokenhostempty(false);
+        setTokennhostsaved(false);
+        JSONObject form = request.getSubmittedForm();
+        request.bindJSON(this, form);
+        Object tokenObject = form.get("apitoken");
+        Object lixHostObject = form.get("lixhost");
+        if (tokenObject.equals("") || lixHostObject.toString().equals("")) {
+            setLixtokenhostempty(true);
+        } else {
+            //this line is used only when toggle for settingspanel is true.
+            //LIXConnectorComBuilder.DescriptorImpl.setApitokenpanel(getApitokenpanel());
+            settingsHandler.saveSetting("lixhost", lixHostObject.toString());
+            setTokennhostsaved(true);
+        }
+        response.sendRedirect("");
+    }
+
+    public void doSaveSeverityLevel(final StaplerRequest request, final StaplerResponse response) throws Exception {
+
+        // ListBoxModel m = new ListBoxModel(new ListBoxModel.Option(Result.SUCCESS.toString()), new ListBoxModel.Option(Result.ABORTED.toString()), new ListBoxModel.Option(Result.FAILURE.toString()), new ListBoxModel.Option(Result.NOT_BUILT.toString()), new ListBoxModel.Option(Result.UNSTABLE.toString()));
+
+        JSONObject form = request.getSubmittedForm();
+        this.jobresultchoice = form.getString("jobresultchoice");
+        setJobResultChoiceToBuildJob();
+        settingsHandler.saveSetting("jobresultchoice", jobresultchoice);
+        response.sendRedirect("");
+    }
+
     // we need this method to prettify the JSON - maybe one day only use one library for JSON!
     private JsonPipelineConfiguration createNewJsonPipelineConfiguration() {
         jsonPipelineConfiguration = new JsonPipelineConfiguration();
+        jsonPipelineConfiguration.readConfiguration();
         JSONObject configObj = JSONObject.fromObject(jsonPipelineConfiguration.getJsonConfigString());
         String configString = configObj.toString(3);
         jsonPipelineConfiguration.setJsonConfigString(configString);
         return jsonPipelineConfiguration;
+    }
+
+    private void retrieveSettings() {
+        settingsHandler = new SettingsHandler();
+        String tmpResultChoice = (String) settingsHandler.getSettingsObj().get("jobresultchoice");
+        if (tmpResultChoice != null && !tmpResultChoice.equals("")) {
+            jobresultchoice = tmpResultChoice;
+        }
+        String tmpLixHost = (String) settingsHandler.getSettingsObj().get("lixhost");
+        if (tmpLixHost != null && !tmpLixHost.equals("")) {
+            lixhost = tmpLixHost;
+        }
+    }
+
+    private void setJobResultChoiceToBuildJob() {
+        Result res;
+
+        switch (jobresultchoice) {
+            case "SUCCESS":
+                res = Result.SUCCESS;
+                break;
+            case "ABORTED":
+                res = Result.ABORTED;
+                break;
+            case "FAILURE":
+                res = Result.FAILURE;
+                break;
+            case "NOT_BUILT":
+                res = Result.NOT_BUILT;
+                break;
+            case "UNSTABLE":
+                res = Result.UNSTABLE;
+                break;
+            default:
+                res = Result.SUCCESS;
+                break;
+        }
+        LIXConnectorComBuilder.DescriptorImpl.setJobresultchoice(res);
+    }
+
+
+    public String getJobresultchoice() {
+        return jobresultchoice;
+    }
+
+    public void setJobresultchoice(String jobresultchoice) {
+        this.jobresultchoice = jobresultchoice;
     }
 
     public String getIconFileName() {
@@ -69,37 +164,37 @@ public class SettingsPanel implements RootAction {
         return "lix-mi-discovery";
     }
 
-
-/*
-    @SuppressWarnings("unchecked")
-    @Override
-    public Descriptor<SettingsPanel> getDescriptor() {
-        Jenkins jenkins = Jenkins.get();
-        if (jenkins == null) {
-            throw new IllegalStateException("Jenkins has not been started");
-        }
-        return jenkins.getDescriptorOrDie(getClass());
+    public Secret getApitokenpanel() {
+        return apitokenpanel;
     }
 
-    public static DescriptorExtensionList<SettingsPanel, Descriptor<SettingsPanel>> all() {
-        return Jenkins.get().getDescriptorList(SettingsPanel.class);
+    @DataBoundSetter
+    public void setApitokenpanel(Secret apitokenpanel) {
+        this.apitokenpanel = apitokenpanel;
     }
 
-    @Extension
-    public static final class DescriptorImpl extends Descriptor<SettingsPanel> {
-
-        public FormValidation doCheckJsonConfigTextArea(@QueryParameter String value)
-                throws IOException, ServletException {
-            if (value.length() == 0)
-                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
-            if (value.length() < 2)
-                return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_tooShort());
-            return FormValidation.ok();
-        }
+    public boolean getTokennhostsaved() {
+        return tokennhostsaved;
     }
-*/
 
-    // get all the jobs via Rest API:
-    // http://jenkins_url:port/api/json?tree=jobs[name,url]
+    public void setTokennhostsaved(boolean tokennhostsaved) {
+        this.tokennhostsaved = tokennhostsaved;
+    }
+
+    public String getLixhost() {
+        return lixhost;
+    }
+
+    public void setLixhost(String lixhost) {
+        this.lixhost = lixhost;
+    }
+
+    public boolean getLixtokenhostempty() {
+        return lixtokenhostempty;
+    }
+
+    public void setLixtokenhostempty(boolean lixtokenhostempty) {
+        this.lixtokenhostempty = lixtokenhostempty;
+    }
+
 }
-
