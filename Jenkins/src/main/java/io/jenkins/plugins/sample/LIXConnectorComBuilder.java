@@ -100,10 +100,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
                 ManifestFileHandler manifestFileHandler = new ManifestFileHandler();
-                manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction);
+                boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction);
 
                 // If SCM was checked out correctly
-                if (run.getResult() != null && run.getResult() == Result.SUCCESS) {
+                if (run.getResult() != null && manifestFileFound) {
                     String jwtToken = getJWTToken();
                     if (jwtToken != null && !jwtToken.equals("")) {
                         //TODO: Get correct deployment version and stage
@@ -117,7 +117,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     }
                 }
             }
-
             run.addAction(logAction);
         }
     }
@@ -148,6 +147,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         String token = "";
 
         try {
+            // TODO: Apply the hostname here to URL (from Credentials)
             URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
             String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -168,10 +168,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 token = (String) jsonObject.get("access_token");
             } finally {
                 if (in != null)
+                    in.close();
+                if (output != null) {
                     output.close();
-                in.close();
+                }
             }
-            System.out.println(token);
             return token;
         } catch (ProtocolException e) {
             e.printStackTrace();

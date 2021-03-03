@@ -110,6 +110,7 @@ public class SettingsPanel implements RootAction {
         String tmpResultChoice = (String) settingsHandler.getSettingsObj().get("jobresultchoice");
         if (tmpResultChoice != null && !tmpResultChoice.equals("")) {
             jobresultchoice = tmpResultChoice;
+            setJobResultChoiceToBuildJob();
         }
         String tmpLixHost = (String) settingsHandler.getSettingsObj().get("lixhost");
         if (tmpLixHost != null && !tmpLixHost.equals("")) {

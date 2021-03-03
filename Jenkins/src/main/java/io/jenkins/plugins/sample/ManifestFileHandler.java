@@ -28,7 +28,7 @@ public class ManifestFileHandler {
 
     }
 
-    public void retrieveManifestJSONFromSCM(String manifestPath, Job job, Run run, Launcher launcher, TaskListener listener, LeanIXLogAction logAction) {
+    public boolean retrieveManifestJSONFromSCM(String manifestPath, Job job, Run run, Launcher launcher, TaskListener listener, LeanIXLogAction logAction) {
 
 
         // dealing with the SCM (see ManifestFile - Class)
@@ -45,13 +45,13 @@ public class ManifestFileHandler {
             ArrayList<SCM> scms = new ArrayList<>(s.getSCMs());
             if (!scms.isEmpty()) {
                 SCM scmItm = scms.get(0);
-
                 try {
                     scmItm.checkout(run, launcher, filePath, listener, changelog, scmRS);
                     manifestJSON = getManifestFileFromFolder(folderPathFile, manifestPath);
                     if (!manifestJSON.equals("")) {
                         // backslashes do not work with the API, remove them
                         manifestJSON = manifestJSON.replaceAll("\\\\", "");
+                        return true;
                     } else {
                         setBuildFailedSCM(run, logAction);
                     }
@@ -65,15 +65,13 @@ public class ManifestFileHandler {
                     e.printStackTrace();
                     setBuildFailedSCM(run, logAction);
                 }
-
             } else {
                 setBuildFailedSCM(run, logAction);
             }
-
         } else {
             setBuildFailedSCM(run, logAction);
         }
-
+        return false;
     }
 
     public int sendFileToConnector(String jwtToken, String deploymentVersion, String deploymentStage) throws IOException {
