@@ -94,8 +94,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             configFound = findJSONPipelineConfig(job);
             if (!configFound) {
                 logAction.setLxManifestPath(pathNotFoundMsg);
+                logAction.setResult(pathNotFoundMsg);
                 listener.getLogger().println(pathNotFoundMsg);
                 setLxmanifestpath(pathNotFoundMsg);
+                run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoice());
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
