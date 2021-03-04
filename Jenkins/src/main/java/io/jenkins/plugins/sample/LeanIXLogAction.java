@@ -10,7 +10,7 @@ public class LeanIXLogAction implements RunAction2 {
     private transient Run run;
     private String result;
     public static final String TOKEN_FAILED = "Could not send the LeanIX-data, because the Authentication failed. Please check your API-Token.";
-    public static final String SCM_FAILED = "Could not send the LeanIX-data, because the SCM could not be accessed correctly.";
+    public static final String SCM_FAILED = "Could not send the LeanIX-data, because the SCM could not be accessed correctly. Please check your LeanIX-Microservice-Discovery page for manifest file path settings.";
     public static final String API_CALL_FAILED = "Could not send the LeanIX-data. The SPI responded with an error. Please check your host name and the manifest.yml file in your version management tool.";
     public static final String SUCCESS =  "Success: The LeanIX-data was transmitted successfully.";
 

@@ -47,6 +47,7 @@ public class ManifestFileHandler {
                 SCM scmItm = scms.get(0);
                 try {
                     scmItm.checkout(run, launcher, filePath, listener, changelog, scmRS);
+                    // TODO: log if scm checkout is failed or file is not found or wrong.
                     manifestJSON = getManifestFileFromFolder(folderPathFile, manifestPath);
                     if (!manifestJSON.equals("")) {
                         // backslashes do not work with the API, remove them
@@ -80,6 +81,7 @@ public class ManifestFileHandler {
         String boundary = Long.toString(System.currentTimeMillis());
         // String postData = "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n------WebKitFormBoundary" + boundary + "--";
 
+        Response response = null;
         try {
 
             OkHttpClient client = new OkHttpClient();
@@ -96,19 +98,23 @@ public class ManifestFileHandler {
                     .addHeader("cache-control", "no-cache")
                     .build();
 
-            Response response = client.newCall(request).execute();
-
+            response = client.newCall(request).execute();
+            if (response.code() == 200)
+            System.out.println("Send file to cicd-connector successfully : " + response.code());
             return response.code();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        } finally {
+            if (response.body() != null)
+            response.body().close();
         }
 
     }
 
     private String getManifestFileFromFolder(File folderPath, String manifestPath) throws IOException, ParseException {
         String fullPath = folderPath.getAbsolutePath() + manifestPath;
-        InputStream inputStream = null;
+        InputStream inputStream;
 
         if (new File(fullPath).exists()) {
             inputStream = new FileInputStream(fullPath);
