@@ -11,9 +11,12 @@ import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import jenkins.model.Jenkins;
 import jenkins.triggers.SCMTriggerItem;
+import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -47,29 +50,27 @@ public class ManifestFileHandler {
                 SCM scmItm = scms.get(0);
                 try {
                     scmItm.checkout(run, launcher, filePath, listener, changelog, scmRS);
-                    manifestJSON = getManifestFileFromFolder(folderPathFile, manifestPath);
+                    manifestJSON = getManifestFileFromFolder(folderPathFile, manifestPath, run, logAction);
                     if (!manifestJSON.equals("")) {
                         // backslashes do not work with the API, remove them
                         manifestJSON = manifestJSON.replaceAll("\\\\", "");
                         return true;
-                    } else {
-                        setBuildFailedSCM(run, logAction);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    setBuildFailedSCM(run, logAction);
+                    setBuildFailed(run, logAction, LeanIXLogAction.SCM_FAILED);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    setBuildFailedSCM(run, logAction);
+                    setBuildFailed(run, logAction, LeanIXLogAction.SCM_FAILED);
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    setBuildFailedSCM(run, logAction);
+                    setBuildFailed(run, logAction, LeanIXLogAction.MANIFEST_WRONG);
                 }
             } else {
-                setBuildFailedSCM(run, logAction);
+                setBuildFailed(run, logAction, LeanIXLogAction.SCM_FAILED);
             }
         } else {
-            setBuildFailedSCM(run, logAction);
+            setBuildFailed(run, logAction, LeanIXLogAction.SCM_FAILED);
         }
         return false;
     }
@@ -106,26 +107,38 @@ public class ManifestFileHandler {
 
     }
 
-    private String getManifestFileFromFolder(File folderPath, String manifestPath) throws IOException, ParseException {
+    private String getManifestFileFromFolder(File folderPath, String manifestPath, Run run, LeanIXLogAction logAction) throws IOException, ParseException {
         String fullPath = folderPath.getAbsolutePath() + manifestPath;
         InputStream inputStream = null;
 
         if (new File(fullPath).exists()) {
             inputStream = new FileInputStream(fullPath);
 
+            // reading in the YAML and checking that it is valid YAML and the outcome is valid JSON
             Reader fileReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
             Yaml yaml = new Yaml();
-            Object obj = yaml.load(fileReader);
-            return JSONValue.toJSONString(obj);
+            String jsonString = "";
+
+            try {
+                Object obj = yaml.load(fileReader);
+                jsonString = JSONValue.toJSONString(obj);
+                JSONParser jsonParser = new JSONParser();
+                jsonParser.parse(jsonString);
+            } catch (YAMLException e) {
+                setBuildFailed(run, logAction, LeanIXLogAction.MANIFEST_WRONG);
+            }
+
+            return jsonString;
 
         } else {
+            setBuildFailed(run, logAction, LeanIXLogAction.MANIFEST_NOTFOUND);
             return "";
         }
     }
 
-    private void setBuildFailedSCM(Run run, LeanIXLogAction logAction) {
+    private void setBuildFailed(Run run, LeanIXLogAction logAction, String logActionString) {
         run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoice());
-        logAction.setResult(LeanIXLogAction.SCM_FAILED);
+        logAction.setResult(logActionString);
     }
 
     public String getManifestJSON() {
