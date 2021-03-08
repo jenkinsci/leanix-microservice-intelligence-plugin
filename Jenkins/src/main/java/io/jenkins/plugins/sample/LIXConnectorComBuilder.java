@@ -87,7 +87,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         if (getUseleanixconnector()) {
 
 
-            boolean configFound = false;
+            boolean configFound;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
 
             Job job = run.getParent();
@@ -146,7 +146,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String getJWTToken() {
         // test for the use of API-Token and requesting JWT-Token
         String apiToken = this.getApitoken();
-        String token = "";
+        String token;
 
         try {
             // TODO: Apply the hostname here to URL (from Credentials)
@@ -174,6 +174,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 if (output != null) {
                     output.close();
                 }
+                connection.disconnect();
             }
             return token;
         } catch (ProtocolException e) {

@@ -81,6 +81,7 @@ public class ManifestFileHandler {
         String boundary = Long.toString(System.currentTimeMillis());
         // String postData = "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n------WebKitFormBoundary" + boundary + "--";
 
+        Response response = null;
         try {
 
             OkHttpClient client = new OkHttpClient();
@@ -97,19 +98,22 @@ public class ManifestFileHandler {
                     .addHeader("cache-control", "no-cache")
                     .build();
 
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
 
             return response.code();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        } finally {
+            if (response.body() != null)
+            response.body().close();
         }
 
     }
 
     private String getManifestFileFromFolder(File folderPath, String manifestPath, Run run, LeanIXLogAction logAction) throws IOException, ParseException {
         String fullPath = folderPath.getAbsolutePath() + manifestPath;
-        InputStream inputStream = null;
+        InputStream inputStream;
 
         if (new File(fullPath).exists()) {
             inputStream = new FileInputStream(fullPath);
