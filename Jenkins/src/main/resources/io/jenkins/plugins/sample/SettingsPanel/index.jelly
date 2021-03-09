@@ -99,7 +99,7 @@
 
             <br/>
             <div style="margin-top: 80px; margin-bottom: 20px;">
-                <h3>Severity Level</h3>
+                <h3>Job result</h3>
             </div>
             <div style="margin-top: 20px; margin-bottom: 50px;">
                 <h4>Set the impact that a failure of the plugin has on the success of Jenkins jobs by setting the
@@ -107,7 +107,7 @@
                 </h4>
             </div>
 
-            <form name="Severity Level" method="POST" action="saveSeverityLevel">
+            <form name="Job result" method="POST" action="saveJobResultChoice">
                 <table>
                     <f:entry title="${%Result in case of failure}" field="jobresultchoice">
                         <select name="jobresultchoice">
@@ -130,7 +130,7 @@
                     </f:entry>
                 </table>
                 <div style="margin-top: 30px;">
-                    <f:submit value="Save Severity Level" name="saveseveritylevel"/>
+                    <f:submit value="Save job result" name="savejobresult"/>
                 </div>
             </form>
 

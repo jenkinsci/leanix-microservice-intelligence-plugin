@@ -34,8 +34,9 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     private String lxmanifestpath;
     private boolean useleanixconnector;
-    private String hostname;
+    private String hostname = "";
     private String apitoken;
+    private String jobresultchoice = "";
     private static final String pathNotFoundMsg = "Path to the manifest wasn't found. Please check your configuration!";
     private static final String exceptionMsg = "Please check your LeanIX credentials (hostname and apitoken).";
 
@@ -80,6 +81,21 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     public String getApitoken() {
         return apitoken;
     }
+
+
+    public String getJobresultchoice() {
+        return jobresultchoice;
+    }
+
+    @DataBoundSetter
+    public void setJobresultchoice(String jobresultchoice) {
+
+        this.jobresultchoice = jobresultchoice;
+        if (!jobresultchoice.equals("")) {
+            DescriptorImpl.setJobresultchoice(Result.fromString(jobresultchoice));
+        }
+    }
+
 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
@@ -206,9 +222,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckUseleanixconnector(@QueryParameter boolean useleanixconnector)
+        public FormValidation doCheckJobresultchoice(@QueryParameter String value)
                 throws IOException, ServletException {
-            System.out.println("here");
+            if (!value.equals("") && !value.equals("FAILURE") && Result.fromString(value).equals(Result.FAILURE)) {
+                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_severityLevelWrong());
+            }
             return FormValidation.ok();
         }
 

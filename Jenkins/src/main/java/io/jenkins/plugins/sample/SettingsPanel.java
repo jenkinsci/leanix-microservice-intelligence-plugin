@@ -84,7 +84,7 @@ public class SettingsPanel implements RootAction {
         response.sendRedirect("");
     }
 
-    public void doSaveSeverityLevel(final StaplerRequest request, final StaplerResponse response) throws Exception {
+    public void doSaveJobResultChoice(final StaplerRequest request, final StaplerResponse response) throws Exception {
 
         // ListBoxModel m = new ListBoxModel(new ListBoxModel.Option(Result.SUCCESS.toString()), new ListBoxModel.Option(Result.ABORTED.toString()), new ListBoxModel.Option(Result.FAILURE.toString()), new ListBoxModel.Option(Result.NOT_BUILT.toString()), new ListBoxModel.Option(Result.UNSTABLE.toString()));
 
