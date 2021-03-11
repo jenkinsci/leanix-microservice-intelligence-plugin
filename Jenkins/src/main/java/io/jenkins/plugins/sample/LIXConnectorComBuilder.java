@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, Serializable {
 
     private String lxmanifestpath;
+    private String dependencymanager = "";
     private boolean useleanixconnector;
     private String hostname = "";
     private String apitoken;
@@ -62,6 +64,16 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     @NonNull
     public String getLxmanifestpath() {
         return lxmanifestpath;
+    }
+
+
+    public String getDependencymanager() {
+        return dependencymanager;
+    }
+
+    @DataBoundSetter
+    public void setDependencymanager(String dependencymanager) {
+        this.dependencymanager = dependencymanager;
     }
 
     @DataBoundSetter
@@ -152,6 +164,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (pipelines.contains(job.getName())) {
                         configFound = true;
                         setLxmanifestpath(pipeConfJson.get("path").toString());
+                        setDependencymanager((pipeConfJson.get("dependency-manager") != null) ? pipeConfJson.get("dependency-manager").toString() : "");
                     }
                 }
             }
@@ -212,6 +225,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
         private static Result jobresultchoice;
+        private static final String[] DEPENDENCYMANAGERCHOICES = {"npm", "gradle", "maven"};
 
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
@@ -226,6 +240,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 throws IOException, ServletException {
             if (!value.equals("") && !value.equals("FAILURE") && Result.fromString(value).equals(Result.FAILURE)) {
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_severityLevelWrong());
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckDependencymanager(@QueryParameter String value)
+                throws IOException, ServletException {
+            if (!value.equals("") && !Arrays.stream(DEPENDENCYMANAGERCHOICES).anyMatch(value::equals)) {
+                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_dependencyManagerChoiceWrong());
             }
             return FormValidation.ok();
         }

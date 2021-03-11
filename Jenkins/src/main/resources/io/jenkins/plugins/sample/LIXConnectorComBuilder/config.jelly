@@ -21,4 +21,17 @@
      <f:entry title="${%Job result}" field="jobresultchoice">
             <f:textbox/>
         </f:entry>
+    <f:entry title="${%The dependency manager used in the repository}" field="dependencymanager">
+        <select name="dependencymanager">
+            <option selected="${it.dependencymanager.equals('npm')? 'true':null}" value="npm">
+                npm
+            </option>
+            <option selected="${it.dependencymanager.equals('maven')? 'true':null}" value="maven">
+                maven
+            </option>
+            <option selected="${it.dependencymanager.equals('gradle')? 'true':null}" value="gradle">
+                gradle
+            </option>
+        </select>
+    </f:entry>
 </j:jelly>
