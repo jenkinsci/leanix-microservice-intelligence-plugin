@@ -21,15 +21,18 @@
      <f:entry title="${%Job result}" field="jobresultchoice">
             <f:textbox/>
         </f:entry>
-    <f:entry title="${%The dependency manager used in the repository}" field="dependencymanager">
+    <f:entry title="${%Dependency manager of the SCM}" field="dependencymanager">
         <select name="dependencymanager">
-            <option selected="${it.dependencymanager.equals('npm')? 'true':null}" value="npm">
+            <option selected="${it.dependencymanager.equals('')? 'true':null}" value="">
+
+            </option>
+            <option selected="${it.dependencymanager.equals('npm')? 'true':null}" value="NPM">
                 npm
             </option>
-            <option selected="${it.dependencymanager.equals('maven')? 'true':null}" value="maven">
+            <option selected="${it.dependencymanager.equals('maven')? 'true':null}" value="MAVEN">
                 maven
             </option>
-            <option selected="${it.dependencymanager.equals('gradle')? 'true':null}" value="gradle">
+            <option selected="${it.dependencymanager.equals('gradle')? 'true':null}" value="GRADLE">
                 gradle
             </option>
         </select>

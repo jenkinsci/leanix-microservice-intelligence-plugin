@@ -73,7 +73,9 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundSetter
     public void setDependencymanager(String dependencymanager) {
-        this.dependencymanager = dependencymanager;
+        if (Arrays.stream(DescriptorImpl.DEPENDENCYMANAGERCHOICES).anyMatch(dependencymanager::equals)) {
+            this.dependencymanager = dependencymanager;
+        }
     }
 
     @DataBoundSetter
@@ -137,7 +139,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     String jwtToken = getJWTToken();
                     if (jwtToken != null && !jwtToken.equals("")) {
                         //TODO: Get correct deployment version and stage
-                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, "1.0.0", "test");
+                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, "1.0.0", "test", getDependencymanager());
                         if (responseCode < 200 || responseCode > 308) {
                             logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
                         }
@@ -225,7 +227,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
         private static Result jobresultchoice;
-        private static final String[] DEPENDENCYMANAGERCHOICES = {"npm", "gradle", "maven"};
+        private static final String[] DEPENDENCYMANAGERCHOICES = {"NPM", "GRADLE", "MAVEN"};
 
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {

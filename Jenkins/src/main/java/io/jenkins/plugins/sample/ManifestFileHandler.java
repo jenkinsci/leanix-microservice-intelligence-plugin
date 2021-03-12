@@ -75,7 +75,7 @@ public class ManifestFileHandler {
         return false;
     }
 
-    public int sendFileToConnector(String jwtToken, String deploymentVersion, String deploymentStage) throws IOException {
+    public int sendFileToConnector(String jwtToken, String deploymentVersion, String deploymentStage, String dependencyManager) throws IOException {
 
 
         String boundary = Long.toString(System.currentTimeMillis());
@@ -89,7 +89,7 @@ public class ManifestFileHandler {
             MediaType mediaType = MediaType.parse("multipart/form-data; boundary=----WebKitFormBoundary" + boundary);
             RequestBody body = RequestBody.create(mediaType, "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n------WebKitFormBoundary" + boundary + "--");
             Request request = new Request.Builder()
-                    .url("https://app.leanix.net/services/cicd-connector/v2/deployment?deploymentVersion=" + deploymentVersion + "&deploymentStage=" + deploymentStage)
+                    .url("https://app.leanix.net/services/cicd-connector/v2/deployment?deploymentVersion=" + deploymentVersion + "&deploymentStage=" + deploymentStage + "&dependencyManager=" + dependencyManager)
                     .post(body)
                     .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary" + boundary)
                     .addHeader("accept", "*/*")
@@ -105,7 +105,7 @@ public class ManifestFileHandler {
             e.printStackTrace();
             return 0;
         } finally {
-            if (response.body() != null)
+            if (response !=null && response.body() != null)
             response.body().close();
         }
 
