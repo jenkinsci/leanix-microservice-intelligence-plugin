@@ -81,15 +81,24 @@ public class ManifestFileHandler {
         String boundary = Long.toString(System.currentTimeMillis());
         // String postData = "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n------WebKitFormBoundary" + boundary + "--";
 
+        JSONObject dataObj = new JSONObject();
+        dataObj.put("version", deploymentVersion);
+        dataObj.put("stage", deploymentStage);
+        // dataObj.put("dependencyManager", dependencyManager);
+        // String dataObjectString = dataObj.toJSONString();
+
         Response response = null;
         try {
 
             OkHttpClient client = new OkHttpClient();
 
+            // TODO: Refactor this and create the body by building the content in a nice way
             MediaType mediaType = MediaType.parse("multipart/form-data; boundary=----WebKitFormBoundary" + boundary);
-            RequestBody body = RequestBody.create(mediaType, "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n------WebKitFormBoundary" + boundary + "--");
+            RequestBody body = RequestBody.create(mediaType, "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n"
+                    + "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"data\"\r\nContent-Type: application/json\r\n\r\n" + dataObj + "\r\n------WebKitFormBoundary" + boundary + "--"
+            );
             Request request = new Request.Builder()
-                    .url("https://app.leanix.net/services/cicd-connector/v2/deployment?deploymentVersion=" + deploymentVersion + "&deploymentStage=" + deploymentStage + "&dependencyManager=" + dependencyManager)
+                    .url("https://app.leanix.net/services/cicd-connector/v2/deployment")
                     .post(body)
                     .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary" + boundary)
                     .addHeader("accept", "*/*")
@@ -105,8 +114,8 @@ public class ManifestFileHandler {
             e.printStackTrace();
             return 0;
         } finally {
-            if (response !=null && response.body() != null)
-            response.body().close();
+            if (response != null && response.body() != null)
+                response.body().close();
         }
 
     }

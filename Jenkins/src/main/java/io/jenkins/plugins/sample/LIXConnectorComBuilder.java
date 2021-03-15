@@ -139,9 +139,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     String jwtToken = getJWTToken();
                     if (jwtToken != null && !jwtToken.equals("")) {
                         //TODO: Get correct deployment version and stage
-                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, "1.0.0", "test", getDependencymanager());
+                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, "4.2.3", "test", getDependencymanager());
                         if (responseCode < 200 || responseCode > 308) {
                             logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
+                            run.setResult(DescriptorImpl.getJobresultchoice());
                         }
                     } else {
                         run.setResult(DescriptorImpl.getJobresultchoice());
