@@ -94,8 +94,6 @@ public class ManifestFileHandler {
                     .addPathSegment("cicd-connector")
                     .addPathSegment("v2")
                     .addPathSegment("deployment")
-                    .addQueryParameter("deploymentVersion", deploymentVersion)
-                    .addQueryParameter("deploymentStage", deploymentStage)
                     .build();
 
 

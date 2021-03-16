@@ -120,6 +120,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
         if (getUseleanixconnector()) {
+
             boolean configFound;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
 
@@ -188,8 +189,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             JSONObject lxConfigurations = (JSONObject) jsonConfig.get("leanIXConfigurations");
             deploymentstage = (String) lxConfigurations.get("deploymentStageVarName");
             deploymentversion = (String) lxConfigurations.get("deploymentVersionVarName");
-            setDeploymentstage(deploymentstage);
-            setDeploymentversion(deploymentversion);
             JSONArray pathSettings = (JSONArray) lxConfigurations.get("settings");
             for (Object pipeConf : pathSettings) {
                 if (pipeConf instanceof JSONObject) {
