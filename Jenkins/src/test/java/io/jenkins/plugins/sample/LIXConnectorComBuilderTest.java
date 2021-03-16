@@ -16,6 +16,7 @@ public class LIXConnectorComBuilderTest {
     public JenkinsRule jenkins = new JenkinsRule();
 
     final String lxManifestPath = "Please specify this path in the plugin configuration.";
+    final String deployment = "Please specify this variable name in the plugin configuration. And set the value into jenkins environment.";
 
     @Test
     public void testConfigRoundtrip() throws Exception {
@@ -27,6 +28,8 @@ public class LIXConnectorComBuilderTest {
         testBuilder.setLxmanifestpath(lxManifestPath);
         testBuilder.setHostname("");
         testBuilder.setApitoken("");
+        testBuilder.setDeploymentstage(deployment);
+        testBuilder.setDeploymentversion(deployment);
         jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
@@ -41,6 +44,8 @@ public class LIXConnectorComBuilderTest {
         lhs.setLxmanifestpath(lxManifestPath);
         lhs.setHostname("");
         lhs.setApitoken("");
+        lhs.setDeploymentstage(deployment);
+        lhs.setDeploymentversion(deployment);
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 
@@ -63,7 +68,7 @@ public class LIXConnectorComBuilderTest {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, "test-scripted-pipeline");
         String pipelineScript
                 = "node {\n"
-                + "  leanIXMicroserviceDiscovery lxmanifestpath: '/lx-manifest.yml', useleanixconnector: true" + "\n"
+                + "  leanIXMicroserviceIntelligence lxmanifestpath: '/lx-manifest.yml', useleanixconnector: true" + "\n"
                 + "}";
         job.setDefinition(new CpsFlowDefinition(pipelineScript, true));
         WorkflowRun completedBuild = jenkins.assertBuildStatusSuccess(job.scheduleBuild2(0));

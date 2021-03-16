@@ -6,7 +6,7 @@
             </l:side-panel>
         <l:main-panel>
             <h1>
-                LeanIX Microservice Discovery
+                LeanIX-Microservice Intelligence
             </h1>
             <h2 style="color: #2e6c80;">The path to the manifest is: ${it.lxManifestPath}</h2>
             <h2 style="margin-top: 50px;">

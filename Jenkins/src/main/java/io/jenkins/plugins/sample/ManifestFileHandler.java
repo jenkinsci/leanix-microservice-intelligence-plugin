@@ -77,19 +77,36 @@ public class ManifestFileHandler {
 
     public int sendFileToConnector(String jwtToken, String deploymentVersion, String deploymentStage) throws IOException {
 
-
         String boundary = Long.toString(System.currentTimeMillis());
-        // String postData = "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n------WebKitFormBoundary" + boundary + "--";
 
-        Response response = null;
+        JSONObject dataObj = new JSONObject();
+        dataObj.put("version", deploymentVersion);
+        dataObj.put("stage", deploymentStage);
+
+        ResponseBody responseBody = null;
         try {
 
             OkHttpClient client = new OkHttpClient();
+            HttpUrl httpUrl = new HttpUrl.Builder()
+                    .scheme("https")
+                    .host("demo-eu.leanix.net")
+                    .addPathSegment("services")
+                    .addPathSegment("cicd-connector")
+                    .addPathSegment("v2")
+                    .addPathSegment("deployment")
+                    .addQueryParameter("deploymentVersion", deploymentVersion)
+                    .addQueryParameter("deploymentStage", deploymentStage)
+                    .build();
+
 
             MediaType mediaType = MediaType.parse("multipart/form-data; boundary=----WebKitFormBoundary" + boundary);
-            RequestBody body = RequestBody.create(mediaType, "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n------WebKitFormBoundary" + boundary + "--");
+            RequestBody body = RequestBody.create(mediaType, "------WebKitFormBoundary" + boundary +
+                    "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n"
+                    + "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; " +
+                    "name=\"data\"\r\nContent-Type: application/json\r\n\r\n" + dataObj + "\r\n------WebKitFormBoundary"
+                    + boundary + "--");
             Request request = new Request.Builder()
-                    .url("https://app.leanix.net/services/cicd-connector/v2/deployment?deploymentVersion=" + deploymentVersion + "&deploymentStage=" + deploymentStage)
+                    .url(httpUrl)
                     .post(body)
                     .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary" + boundary)
                     .addHeader("accept", "*/*")
@@ -98,15 +115,15 @@ public class ManifestFileHandler {
                     .addHeader("cache-control", "no-cache")
                     .build();
 
-            response = client.newCall(request).execute();
-
+            Response response = client.newCall(request).execute();
+            responseBody = response.body();
             return response.code();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
         } finally {
-            if (response.body() != null)
-            response.body().close();
+            if (responseBody != null)
+                responseBody.close();
         }
 
     }

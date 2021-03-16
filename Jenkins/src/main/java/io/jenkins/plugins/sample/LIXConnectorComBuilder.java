@@ -1,6 +1,6 @@
 package io.jenkins.plugins.sample;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -37,8 +37,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String hostname = "";
     private String apitoken;
     private String jobresultchoice = "";
+    private String deploymentstage;
+    private String deploymentversion;
     private static final String pathNotFoundMsg = "Path to the manifest wasn't found. Please check your configuration!";
     private static final String exceptionMsg = "Please check your LeanIX credentials (hostname and apitoken).";
+    private static final String defaultVersion = "Default version number used is BUILD_ID ";
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
@@ -59,7 +62,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         this.lxmanifestpath = lxManifestPath;
     }
 
-    @NonNull
     public String getLxmanifestpath() {
         return lxmanifestpath;
     }
@@ -96,15 +98,31 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         }
     }
 
+    public String getDeploymentstage() {
+        return deploymentstage;
+    }
+
+    @DataBoundSetter
+    public void setDeploymentstage(String deploymentstage) {
+        this.deploymentstage = deploymentstage;
+    }
+
+    public String getDeploymentversion() {
+        return deploymentversion;
+    }
+
+    @DataBoundSetter
+    public void setDeploymentversion(String deploymentversion) {
+        this.deploymentversion = deploymentversion;
+    }
 
     @Override
-    public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+    public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
         if (getUseleanixconnector()) {
-
-
             boolean configFound;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
+
 
             Job job = run.getParent();
             configFound = findJSONPipelineConfig(job);
@@ -120,12 +138,35 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 ManifestFileHandler manifestFileHandler = new ManifestFileHandler();
                 boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction);
 
+
+                String stage = env.get(deploymentstage);
+                String version = env.get(deploymentversion);
+                if (stage != null && !stage.equals("")) {
+                    listener.getLogger().println("Your deployment stage is " + stage + ".");
+                    logAction.setStage(stage);
+                } else {
+                    logAction.setStage(LeanIXLogAction.STAGE_NOTSET);
+                    listener.getLogger().println(LeanIXLogAction.STAGE_NOTSET);
+                    setDeploymentstage(LeanIXLogAction.STAGE_NOTSET);
+                }
+                if (version != null && !version.equals("")) {
+                    listener.getLogger().println("Your deployment version is " + version + ".");
+                    logAction.setVersion(version);
+                } else {
+                    version = env.get("BUILD_ID");
+                    logAction.setStage(LeanIXLogAction.VERSION_NOTSET);
+                    listener.getLogger().println(LeanIXLogAction.VERSION_NOTSET);
+                    setDeploymentstage(LeanIXLogAction.VERSION_NOTSET);
+                    listener.getLogger().println(defaultVersion + version + ".");
+                    logAction.setVersion(version);
+                }
+
+
                 // If SCM was checked out correctly
                 if (run.getResult() != null && manifestFileFound) {
                     String jwtToken = getJWTToken();
                     if (jwtToken != null && !jwtToken.equals("")) {
-                        //TODO: Get correct deployment version and stage
-                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, "1.0.0", "test");
+                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, version, stage);
                         if (responseCode < 200 || responseCode > 308) {
                             logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
                         }
@@ -144,8 +185,13 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         JsonPipelineConfiguration jsonPipelineConfig = new JsonPipelineConfiguration();
         JSONObject jsonConfig = (JSONObject) jsonPipelineConfig.getJsonConfig();
         if (jsonConfig != null) {
-            JSONArray lixConfigurations = (JSONArray) jsonConfig.get("leanIXConfigurations");
-            for (Object pipeConf : lixConfigurations) {
+            JSONObject lxConfigurations = (JSONObject) jsonConfig.get("leanIXConfigurations");
+            deploymentstage = (String) lxConfigurations.get("deploymentStageVarName");
+            deploymentversion = (String) lxConfigurations.get("deploymentVersionVarName");
+            setDeploymentstage(deploymentstage);
+            setDeploymentversion(deploymentversion);
+            JSONArray pathSettings = (JSONArray) lxConfigurations.get("settings");
+            for (Object pipeConf : pathSettings) {
                 if (pipeConf instanceof JSONObject) {
                     JSONObject pipeConfJson = (JSONObject) pipeConf;
                     JSONArray pipelines = (JSONArray) pipeConfJson.get("pipelines");
@@ -166,7 +212,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         try {
             // TODO: Apply the hostname here to URL (from Credentials)
-            URL url = new URL("https://app.leanix.net/services/mtm/v1/oauth2/token");
+            URL url = new URL("https://demo-eu.leanix.net/services/mtm/v1/oauth2/token");
             String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
@@ -187,9 +233,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             } finally {
                 if (in != null)
                     in.close();
-                if (output != null) {
-                    output.close();
-                }
+                output.close();
                 connection.disconnect();
             }
             return token;
@@ -205,7 +249,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return exceptionMsg;
     }
 
-    @Symbol("leanIXMicroserviceDiscovery")
+    @Symbol("leanIXMicroserviceIntelligence")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
