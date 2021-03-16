@@ -1,17 +1,21 @@
 {
-  "leanIXConfigurations":[
-    {
-      "pipelines":[
-        "pipeline1",
-        "pipeline2"
-      ],
-      "path":"/other/lx-manifest.yaml"
-    },
-    {
-      "pipelines":[
-        "pipeline3"
-      ],
-      "path":"/lx-manifest.yml"
-    }
-  ]
+  "leanIXConfigurations": {
+    "deploymentStageVarName": "stage",
+    "deploymentVersionVarName": "version",
+    "settings": [
+      {
+        "pipelines": [
+          "pipeline1",
+          "pipeline2"
+        ],
+        "path": "/other/lx-manifest.yml"
+      },
+      {
+        "pipelines": [
+          "pipeline3"
+        ],
+        "path": "/lx-manifest.yml"
+      }
+    ]
+  }
 }
