@@ -31,7 +31,7 @@ public class ManifestFileHandler {
 
     }
 
-    public boolean retrieveManifestJSONFromSCM(String manifestPath, Job job, Run run, Launcher launcher, TaskListener listener, LeanIXLogAction logAction) {
+    public boolean retrieveManifestJSONFromSCM(String manifestPath, Job job, Run run, Launcher launcher, TaskListener listener, LeanIXLogAction logAction, File folderPathFile) {
 
 
         // dealing with the SCM (see ManifestFile - Class)
@@ -42,7 +42,6 @@ public class ManifestFileHandler {
         Jenkins jenkins = Jenkins.get();
         File changelog = new File(jenkins.getRootDir() + "/leanix/changelog");
         SCMRevisionState scmRS = null;
-        File folderPathFile = new File(jenkins.getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout");
         FilePath filePath = new FilePath(folderPathFile);
         if (s != null) {
             ArrayList<SCM> scms = new ArrayList<>(s.getSCMs());

@@ -9,6 +9,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.json.simple.JSONArray;
@@ -151,7 +152,9 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
                 ManifestFileHandler manifestFileHandler = new ManifestFileHandler();
-                boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction);
+                File folderPathFile = new File(Jenkins.get().getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout");
+                boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction, folderPathFile);
+                DependencyHandler dependencyHandler = new DependencyHandler();
 
 
                 String stage = env.get(deploymentstage);
@@ -179,6 +182,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
                 // If SCM was checked out correctly
                 if (run.getResult() != null && manifestFileFound) {
+                    File projectDependencies = dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
                     String jwtToken = getJWTToken();
                     if (jwtToken != null && !jwtToken.equals("")) {
                         int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, version, stage, dependencymanager);
