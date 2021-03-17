@@ -1,6 +1,7 @@
 package io.jenkins.plugins.sample;
 
 import jenkins.model.Jenkins;
+
 import java.io.File;
 
 public class DependencyHandler {
@@ -25,11 +26,11 @@ public class DependencyHandler {
 
         try {
             if (dependencyManager.equals("NPM") || dependencyManager.equals("npm")) {
-                return searchFile(scmRootFolderFile, "package.json").getAbsolutePath();
+                return searchFile(scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
             } else if (dependencyManager.equals("MAVEN") || dependencyManager.equals("maven")) {
-                return searchFile(scmRootFolderFile, "pom.xml").getAbsolutePath();
+                return searchFile(scmRootFolderFile, "pom.xml", dependencyManager).getAbsolutePath();
             } else if (dependencyManager.equals("GRADLE") || dependencyManager.equals("gradle")) {
-                return searchFile(scmRootFolderFile, "init.gradle").getAbsolutePath();
+                return searchFile(scmRootFolderFile, "init.gradle", dependencyManager).getAbsolutePath();
             }
         } catch (NullPointerException e) {
             return "";
@@ -37,21 +38,33 @@ public class DependencyHandler {
         return "";
     }
 
-    private static File searchFile(File folder, String fileName) {
-        if (folder.isDirectory()) {
-            File[] arr = folder.listFiles();
+    private File searchFile(File file, String fileName, String dependencyManager) {
+        if (file.isDirectory()) {
+            File[] arr = file.listFiles();
             for (File f : arr) {
-                File found = searchFile(f, fileName);
+                File found = searchFile(f, fileName, dependencyManager);
                 if (found != null)
                     return found;
             }
         } else {
-            if (folder.getName().equals(fileName)) {
-                return folder;
+            if(!dependencyManager.equals("GRADLE") || !dependencyManager.equals("gradle") ) {
+                if (file.getName().equals(fileName)) {
+                    return file;
+                }
+            }else{
+                if(getFileEnding(file.getName()).equals("gradle")){
+                    return file;
+                }
             }
         }
         return null;
     }
 
-
+    private String getFileEnding(String fileName) {
+        int i = fileName.lastIndexOf('.');
+        if (i > 0) {
+            return fileName.substring(i + 1);
+        }
+        return "";
+    }
 }
