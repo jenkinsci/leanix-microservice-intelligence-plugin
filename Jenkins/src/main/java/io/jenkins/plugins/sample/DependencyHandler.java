@@ -24,7 +24,11 @@ public class DependencyHandler {
             if (OS.contains("Windows")) {
                 processBuilder.command(Jenkins.get().getRootDir() + "\\leanix\\console_scripts\\build_licenses.bat", dmFilePath, dependencyManager);
             } else {
-                processBuilder.command(Jenkins.get().getRootDir() + "\\leanix\\console_scripts\\build_licenses.sh", dmFilePath, dependencyManager);
+                String filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/build_licenses.sh";
+                File file = new File(filePath);
+                if (file.exists())
+                    file.setExecutable(true);
+                processBuilder.command(filePath, dmFilePath, dependencyManager);
             }
             BufferedReader reader;
             try {
