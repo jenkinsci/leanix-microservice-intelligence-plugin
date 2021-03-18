@@ -4,18 +4,12 @@
     <f:entry title="${%LeanIX-Manifest-Path (readonly)}" field="lxmanifestpath">
         <f:readOnlyTextbox default="Please specify this path in the plugin configuration."/>
     </f:entry>
-    <f:entry title="${%LeanIX-DeploymentStage-VariableName (readonly)}" field="deploymentstage">
-        <f:readOnlyTextbox default="Please specify this variable name in the plugin configuration. And set the value into jenkins environment." />
+    <!--    <f:advanced>-->
+    <f:entry title="${%Use LeanIX Connector}" field="useleanixconnector"
+             description="${%LeanIXConnectorDescr}">
+        <f:checkbox default="${descriptor.defaultUseLeanIXConnector}"/>
     </f:entry>
-    <f:entry title="${%LeanIX-DeploymentVersion-VariableName (readonly)}" field="deploymentversion">
-        <f:readOnlyTextbox default="Please specify this variable name in the plugin configuration. And set the value into jenkins environment." />
-    </f:entry>
-<!--    <f:advanced>-->
-        <f:entry title="${%Use LeanIX Connector}" field="useleanixconnector"
-                 description="${%LeanIXConnectorDescr}">
-            <f:checkbox default="${descriptor.defaultUseLeanIXConnector}"/>
-        </f:entry>
-<!--    </f:advanced>-->
+    <!--    </f:advanced>-->
     <f:entry title="${%LeanIX-Hostname}" field="hostname">
         <f:textbox/>
     </f:entry>
@@ -24,6 +18,25 @@
         <f:password/>
     </f:entry>
     <!--   Can be turned on, if we want the user to specify the severity level in the job-GUI -->
+    <f:entry title="${%Result in case of failure}" field="jobresultchoice">
+        <select name="jobresultchoice">
+            <option selected="${it.jobresultchoice.equals('SUCCESS')? 'true':null}" value="SUCCESS">
+                SUCCESS
+            </option>
+            <option selected="${it.jobresultchoice.equals('ABORTED')? 'true':null}" value="ABORTED">
+                ABORTED
+            </option>
+            <option selected="${it.jobresultchoice.equals('FAILURE')? 'true':null}" value="FAILURE">
+                FAILURE
+            </option>
+            <option selected="${it.jobresultchoice.equals('NOT_BUILT')? 'true':null}" value="NOT_BUILT">
+                NOT_BUILT
+            </option>
+            <option selected="${it.jobresultchoice.equals('UNSTABLE')? 'true':null}" value="UNSTABLE">
+                UNSTABLE
+            </option>
+        </select>
+    </f:entry>
      <f:entry title="${%Job result}" field="jobresultchoice">
             <f:textbox/>
         </f:entry>

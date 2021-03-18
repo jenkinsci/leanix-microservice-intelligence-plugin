@@ -15,8 +15,8 @@ public class LIXConnectorComBuilderTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
+    final String pathNotFound = "The manifest file could not be found in your Source Code Management System, please check that the path you specified is correct.";
     final String lxManifestPath = "Please specify this path in the plugin configuration.";
-    final String deployment = "Please specify this variable name in the plugin configuration. And set the value into jenkins environment.";
 
     @Test
     public void testConfigRoundtrip() throws Exception {
@@ -28,8 +28,7 @@ public class LIXConnectorComBuilderTest {
         testBuilder.setLxmanifestpath(lxManifestPath);
         testBuilder.setHostname("");
         testBuilder.setApitoken("");
-        testBuilder.setDeploymentstage(deployment);
-        testBuilder.setDeploymentversion(deployment);
+        testBuilder.setJobresultchoice("SUCCESS");
         jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
@@ -39,13 +38,11 @@ public class LIXConnectorComBuilderTest {
         LIXConnectorComBuilder builder = new LIXConnectorComBuilder();
         project.getBuildersList().add(builder);
         project = jenkins.configRoundtrip(project);
-
         LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
         lhs.setLxmanifestpath(lxManifestPath);
         lhs.setHostname("");
         lhs.setApitoken("");
-        lhs.setDeploymentstage(deployment);
-        lhs.setDeploymentversion(deployment);
+        lhs.setJobresultchoice("SUCCESS");
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 
@@ -56,9 +53,8 @@ public class LIXConnectorComBuilderTest {
         builder.setLxmanifestpath("/lx-manifest.yml");
         builder.setUseleanixconnector(true);
         project.getBuildersList().add(builder);
-
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-        jenkins.assertLogContains("Path to the manifest wasn't found", build);
+        jenkins.assertLogContains(pathNotFound, build);
     }
 
     @Test
@@ -72,9 +68,7 @@ public class LIXConnectorComBuilderTest {
                 + "}";
         job.setDefinition(new CpsFlowDefinition(pipelineScript, true));
         WorkflowRun completedBuild = jenkins.assertBuildStatusSuccess(job.scheduleBuild2(0));
-        // String expectedString = "Your manifest path is " + lxManifestPath + "!";
-        String expectedString = "Path to the manifest wasn't found";
-        jenkins.assertLogContains(expectedString, completedBuild);
+        jenkins.assertLogContains(pathNotFound, completedBuild);
     }
 
 }
