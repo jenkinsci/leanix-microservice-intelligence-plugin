@@ -76,7 +76,7 @@ public class ManifestFileHandler {
         return false;
     }
 
-    public int sendFileToConnector(String jwtToken, String deploymentVersion, String deploymentStage) throws IOException {
+    public int sendFileToConnector(String hostname, String jwtToken, String deploymentVersion, String deploymentStage) throws IOException {
 
         String boundary = Long.toString(System.currentTimeMillis());
 
@@ -90,7 +90,7 @@ public class ManifestFileHandler {
             OkHttpClient client = new OkHttpClient();
             HttpUrl httpUrl = new HttpUrl.Builder()
                     .scheme("https")
-                    .host("demo-eu.leanix.net")
+                    .host(hostname)
                     .addPathSegment("services")
                     .addPathSegment("cicd-connector")
                     .addPathSegment("v2")
