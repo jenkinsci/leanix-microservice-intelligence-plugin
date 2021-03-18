@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 public class DependencyHandler {
 
@@ -25,7 +26,7 @@ public class DependencyHandler {
             } else {
                 processBuilder.command(Jenkins.get().getRootDir() + "\\leanix\\console_scripts\\build_licenses.sh", dmFilePath, dependencyManager);
             }
-
+            BufferedReader reader;
             try {
 
                 processBuilder.redirectErrorStream(true);
@@ -34,8 +35,8 @@ public class DependencyHandler {
 
                 StringBuilder output = new StringBuilder();
 
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(process.getInputStream()));
+                reader = new BufferedReader(
+                        new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
 
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -50,6 +51,7 @@ public class DependencyHandler {
                     System.out.println("ERROR!");
                 }
                 System.out.println(output);
+                reader.close();
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -69,12 +71,19 @@ public class DependencyHandler {
         try {
             if (dependencyManager.equalsIgnoreCase("npm")) {
                 String npmPath = searchDependencyFile(scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
-                return npmPath.substring(0, npmPath.length() - "package.json".length() - 1);
+                if (npmPath != null) {
+                    return npmPath.substring(0, npmPath.length() - "package.json".length() - 1);
+                }
             } else if (dependencyManager.equalsIgnoreCase("maven")) {
                 String mavenPath = searchDependencyFile(scmRootFolderFile, "pom.xml", dependencyManager).getAbsolutePath();
-                return mavenPath.substring(0, mavenPath.length() - "pom.xml".length() - 1);
+                if (mavenPath != null) {
+                    return mavenPath.substring(0, mavenPath.length() - "pom.xml".length() - 1);
+                }
             } else if (dependencyManager.equalsIgnoreCase("gradle")) {
-                return searchDependencyFile(scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
+                String gradlePath = searchDependencyFile(scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
+                if (gradlePath != null) {
+                    return gradlePath;
+                }
             }
         } catch (NullPointerException e) {
             return "";
@@ -85,12 +94,14 @@ public class DependencyHandler {
     private File searchDependencyFile(File file, String fileName, String dependencyManager) {
         if (file.isDirectory()) {
             File[] arr = file.listFiles();
-            for (File f : arr) {
-                //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
-                if (!dependencyManager.equalsIgnoreCase("npm") || !f.getPath().contains("node_modules")) {
-                    File found = searchDependencyFile(f, fileName, dependencyManager);
-                    if (found != null)
-                        return found;
+            if (arr != null) {
+                for (File f : arr) {
+                    //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
+                    if (!dependencyManager.equalsIgnoreCase("npm") || !f.getPath().contains("node_modules")) {
+                        File found = searchDependencyFile(f, fileName, dependencyManager);
+                        if (found != null)
+                            return found;
+                    }
                 }
             }
         } else {

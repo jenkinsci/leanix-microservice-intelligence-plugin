@@ -182,7 +182,9 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
                 // If SCM was checked out correctly
                 if (run.getResult() != null && manifestFileFound) {
-                    File projectDependencies = dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
+                    /*File projectDependencies = */
+                    dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
+
                     String jwtToken = getJWTToken();
                     if (jwtToken != null && !jwtToken.equals("")) {
                         int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, version, stage, dependencymanager);
