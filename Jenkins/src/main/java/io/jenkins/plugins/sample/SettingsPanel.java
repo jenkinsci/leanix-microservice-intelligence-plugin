@@ -141,7 +141,7 @@ public class SettingsPanel implements RootAction {
                 res = Result.SUCCESS;
                 break;
         }
-        LIXConnectorComBuilder.DescriptorImpl.setJobresultchoice(res);
+        LIXConnectorComBuilder.DescriptorImpl.setJobresultchoicecentral(res);
     }
 
 

@@ -26,9 +26,10 @@ public class ManifestFileHandler {
 
 
     String manifestJSON = "";
+    private String jobresultchoice = "";
 
-    public ManifestFileHandler() {
-
+    public ManifestFileHandler(String jrs) {
+        jobresultchoice = jrs;
     }
 
     public boolean retrieveManifestJSONFromSCM(String manifestPath, Job job, Run run, Launcher launcher, TaskListener listener, LeanIXLogAction logAction) {
@@ -156,7 +157,7 @@ public class ManifestFileHandler {
     }
 
     private void setBuildFailed(Run run, LeanIXLogAction logAction, String logActionString) {
-        run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoice());
+        run.setResult(Result.fromString(jobresultchoice));
         logAction.setResult(logActionString);
     }
 

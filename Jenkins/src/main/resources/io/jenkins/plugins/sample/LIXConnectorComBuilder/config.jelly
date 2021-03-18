@@ -20,19 +20,22 @@
     <!--   Can be turned on, if we want the user to specify the severity level in the job-GUI -->
     <f:entry title="${%Result in case of failure}" field="jobresultchoice">
         <select name="jobresultchoice">
-            <option selected="${it.jobresultchoice.equals('SUCCESS')? 'true':null}" value="SUCCESS">
+            <option selected="${instance.jobresultchoice.equals('')? 'true':null}" value="">
+                --
+            </option>
+            <option selected="${instance.jobresultchoice.equals('SUCCESS')? 'true':null}" value="SUCCESS">
                 SUCCESS
             </option>
-            <option selected="${it.jobresultchoice.equals('ABORTED')? 'true':null}" value="ABORTED">
+            <option selected="${instance.jobresultchoice.equals('ABORTED')? 'true':null}" value="ABORTED">
                 ABORTED
             </option>
-            <option selected="${it.jobresultchoice.equals('FAILURE')? 'true':null}" value="FAILURE">
+            <option selected="${instance.jobresultchoice.equals('FAILURE')? 'true':null}" value="FAILURE">
                 FAILURE
             </option>
-            <option selected="${it.jobresultchoice.equals('NOT_BUILT')? 'true':null}" value="NOT_BUILT">
+            <option selected="${instance.jobresultchoice.equals('NOT_BUILT')? 'true':null}" value="NOT_BUILT">
                 NOT_BUILT
             </option>
-            <option selected="${it.jobresultchoice.equals('UNSTABLE')? 'true':null}" value="UNSTABLE">
+            <option selected="${instance.jobresultchoice.equals('UNSTABLE')? 'true':null}" value="UNSTABLE">
                 UNSTABLE
             </option>
         </select>
