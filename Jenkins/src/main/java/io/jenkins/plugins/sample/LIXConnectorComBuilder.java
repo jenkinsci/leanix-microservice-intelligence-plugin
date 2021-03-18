@@ -39,8 +39,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
-    private static final String pathNotFoundMsg = "Path to the manifest wasn't found. Please check your configuration!";
-    private static final String exceptionMsg = "Please check your LeanIX credentials (hostname and apitoken).";
     private static final String defaultVersion = "Default version number used is BUILD_ID ";
 
     @DataBoundConstructor
@@ -128,10 +126,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             Job job = run.getParent();
             configFound = findJSONPipelineConfig(job);
             if (!configFound) {
-                logAction.setLxManifestPath(pathNotFoundMsg);
-                logAction.setResult(pathNotFoundMsg);
-                listener.getLogger().println(pathNotFoundMsg);
-                setLxmanifestpath(pathNotFoundMsg);
+                logAction.setLxManifestPath(LeanIXLogAction.MANIFEST_NOTFOUND);
+                logAction.setResult(LeanIXLogAction.MANIFEST_NOTFOUND);
+                listener.getLogger().println(LeanIXLogAction.MANIFEST_NOTFOUND);
+                setLxmanifestpath(LeanIXLogAction.MANIFEST_NOTFOUND);
                 run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoice());
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
@@ -165,9 +163,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
                 // If SCM was checked out correctly
                 if (run.getResult() != null && manifestFileFound) {
-                    String jwtToken = getJWTToken();
-                    if (jwtToken != null && !jwtToken.equals("")) {
-                        int responseCode = manifestFileHandler.sendFileToConnector(jwtToken, version, stage);
+                    String host = this.getHostname();
+                    String jwtToken = getJWTToken(host);
+                    if (jwtToken != null && !jwtToken.isEmpty()) {
+                        int responseCode = manifestFileHandler.sendFileToConnector(host, jwtToken, version, stage);
                         if (responseCode < 200 || responseCode > 308) {
                             logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
                         }
@@ -204,21 +203,20 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return configFound;
     }
 
-    private String getJWTToken() {
+    private String getJWTToken(String hostname) {
         // test for the use of API-Token and requesting JWT-Token
         String apiToken = this.getApitoken();
         String token;
 
         try {
             // TODO: Apply the hostname here to URL (from Credentials)
-            URL url = new URL("https://demo-eu.leanix.net/services/mtm/v1/oauth2/token");
+            URL url = new URL("https://" + hostname + "/services/mtm/v1/oauth2/token");
             String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Authorization", "Basic " + encoding);
             String postData = "grant_type=client_credentials";
-            connection.setRequestProperty("Content-length",
-                    String.valueOf(postData.length()));
+            connection.setRequestProperty("Content-length", String.valueOf(postData.length()));
             connection.setDoOutput(true);
             DataOutputStream output = new DataOutputStream(connection.getOutputStream());
             output.writeBytes(postData);
@@ -245,7 +243,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return exceptionMsg;
+        return "";
     }
 
     @Symbol("leanIXMicroserviceIntelligence")
