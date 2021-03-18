@@ -158,11 +158,11 @@ public class SettingsPanel implements RootAction {
     }
 
     public String getDisplayName() {
-        return "LeanIX-Microservice-Discovery";
+        return "LeanIX-Microservice-Intelligence";
     }
 
     public String getUrlName() {
-        return "lix-mi-discovery";
+        return "leanix-microservice-intelligence";
     }
 
     public Secret getApitokenpanel() {
