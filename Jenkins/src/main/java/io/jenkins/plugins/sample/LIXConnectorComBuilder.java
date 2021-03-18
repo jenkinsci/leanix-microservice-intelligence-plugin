@@ -36,7 +36,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private boolean useleanixconnector;
     private String hostname = "";
     private String apitoken;
-    private String jobresultchoice = "";
+    private String jobresultchoice;
     private String deploymentstage;
     private String deploymentversion;
     private static final String pathNotFoundMsg = "Path to the manifest wasn't found. Please check your configuration!";
@@ -45,8 +45,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
-
     }
+
 
     @DataBoundSetter
     public void setUseleanixconnector(boolean useLeanIXConnector) {
@@ -91,11 +91,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundSetter
     public void setJobresultchoice(String jobresultchoice) {
-
         this.jobresultchoice = jobresultchoice;
-        if (!jobresultchoice.equals("")) {
-            DescriptorImpl.setJobresultchoice(Result.fromString(jobresultchoice));
-        }
     }
 
     public String getDeploymentstage() {
@@ -121,6 +117,10 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         if (getUseleanixconnector()) {
 
+            if (jobresultchoice == null || jobresultchoice.equals("")) {
+                jobresultchoice = DescriptorImpl.getJobresultchoicecentral().toString();
+            }
+
             boolean configFound;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
 
@@ -132,11 +132,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 logAction.setResult(pathNotFoundMsg);
                 listener.getLogger().println(pathNotFoundMsg);
                 setLxmanifestpath(pathNotFoundMsg);
-                run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoice());
+                run.setResult(Result.fromString(getJobresultchoice()));
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
-                ManifestFileHandler manifestFileHandler = new ManifestFileHandler();
+                ManifestFileHandler manifestFileHandler = new ManifestFileHandler(jobresultchoice);
                 boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction);
 
 
@@ -172,7 +172,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                             logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
                         }
                     } else {
-                        run.setResult(DescriptorImpl.getJobresultchoice());
+                        run.setResult(Result.fromString(getJobresultchoice()));
                         logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
                     }
                 }
@@ -254,7 +254,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
-        private static Result jobresultchoice;
+        public static Result jobresultchoicecentral;
 
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
@@ -295,12 +295,13 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return Messages.LIXConnectorComBuilder_DescriptorImpl_DisplayLXManifestPath();
         }
 
-        public static Result getJobresultchoice() {
-            return jobresultchoice;
+        public static Result getJobresultchoicecentral() {
+            return jobresultchoicecentral;
         }
 
-        public static void setJobresultchoice(Result jobresultchoice) {
-            DescriptorImpl.jobresultchoice = jobresultchoice;
+        public static void setJobresultchoicecentral(Result jobresultchoicecentral) {
+            DescriptorImpl.jobresultchoicecentral = jobresultchoicecentral;
         }
+
     }
 }
