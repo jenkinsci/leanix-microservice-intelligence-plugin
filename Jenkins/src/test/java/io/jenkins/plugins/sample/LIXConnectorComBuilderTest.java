@@ -28,8 +28,6 @@ public class LIXConnectorComBuilderTest {
         testBuilder.setLxmanifestpath(lxManifestPath);
         testBuilder.setHostname("");
         testBuilder.setApitoken("");
-        bugfix-Severity-level-overwriting
-        testBuilder.setJobresultchoice("SUCCESS");
         jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
@@ -43,7 +41,6 @@ public class LIXConnectorComBuilderTest {
         lhs.setLxmanifestpath(lxManifestPath);
         lhs.setHostname("");
         lhs.setApitoken("");
-        lhs.setJobresultchoice("SUCCESS");
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 

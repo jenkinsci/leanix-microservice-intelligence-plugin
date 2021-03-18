@@ -130,7 +130,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 logAction.setResult(LeanIXLogAction.MANIFEST_NOTFOUND);
                 listener.getLogger().println(LeanIXLogAction.MANIFEST_NOTFOUND);
                 setLxmanifestpath(LeanIXLogAction.MANIFEST_NOTFOUND);
-                run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoice());
+                run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoicecentral());
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
