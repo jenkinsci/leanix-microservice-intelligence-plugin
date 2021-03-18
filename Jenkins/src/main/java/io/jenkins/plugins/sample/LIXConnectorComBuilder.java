@@ -36,7 +36,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private boolean useleanixconnector;
     private String hostname = "";
     private String apitoken;
-    private String jobresultchoice;
+    private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
     private static final String pathNotFoundMsg = "Path to the manifest wasn't found. Please check your configuration!";
@@ -254,7 +254,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
-        public static Result jobresultchoicecentral;
+        private static Result jobresultchoicecentral = Result.SUCCESS;
 
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
