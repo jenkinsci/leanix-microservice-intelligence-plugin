@@ -9,7 +9,7 @@
         <relativePath/>
     </parent>
     <groupId>io.jenkins.plugins</groupId>
-    <artifactId>leanix_cicd</artifactId>
+    <artifactId>leanix-microservice-intelligence</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
@@ -22,7 +22,7 @@
           ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
      -->
     </properties>
-    <name>LeanIX_CICD</name>
+    <name>LeanIX Microservice Intelligence</name>
     <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
     <licenses>
         <license>
