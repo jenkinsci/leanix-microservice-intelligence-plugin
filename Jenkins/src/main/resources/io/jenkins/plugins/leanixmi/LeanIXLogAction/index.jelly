@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+    <l:layout title="LeanIX Microservice Intelligence Log">
+            <l:side-panel>
+                <st:include page="sidepanel.jelly" it="${it.run}" optional="true" />
+            </l:side-panel>
+        <l:main-panel>
+            <h2 style="margin-bottom: 50px">
+                LeanIX Microservice Intelligence
+            </h2>
+            <div style="color: #2e6c80;font-size: medium; margin-top: 50px">The path to the manifest is: <span style="color: #e37516;font-size: medium;margin-left: 20px;">${it.lxManifestPath}</span></div>
+            <div style="color: #2e6c80;font-size: medium">The deployment stage value is: <span style="color: #e37516;font-size: medium;margin-left: 20px;">${it.stage}</span></div>
+            <div style="color: #2e6c80;font-size: medium">The deployment version value is: <span style="color: #e37516;font-size: medium;margin-left: 20px;">${it.version}</span></div>
+            <h4 style="margin-top: 70px;margin-bottom: 20px;">
+                Status of this LeanIX build run:
+            </h4>
+            <div style="color: #2e6c80;font-size: large">${it.result}</div>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
