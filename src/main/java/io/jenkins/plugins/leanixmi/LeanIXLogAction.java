@@ -19,6 +19,7 @@ public class LeanIXLogAction implements RunAction2 {
     public static final String SUCCESS =  "Success: The LeanIX-data was transmitted successfully.";
     public static final String STAGE_NOTSET = "Deployment stage variable value is not set in jenkins environment.";
     public static final String VERSION_NOTSET = "Deployment version variable value is not set in jenkins environment.";
+    public static final String DEPENDENCIES_NOT_GENERATED = "The dependencies of your project couldn't be generated.";
 
 
     @Override
@@ -33,7 +34,7 @@ public class LeanIXLogAction implements RunAction2 {
 
     @Override
     public String getIconFileName() {
-        return Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/images/logo_leanix.png";
+        return Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/images/logo_leanix.png";
     }
 
     @Override

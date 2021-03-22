@@ -154,7 +154,7 @@ public class SettingsPanel implements RootAction {
     }
 
     public String getIconFileName() {
-        return Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/images/logo_leanix.png";
+        return Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/images/logo_leanix.png";
     }
 
     public String getDisplayName() {

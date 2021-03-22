@@ -145,7 +145,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 logAction.setResult(LeanIXLogAction.MANIFEST_NOTFOUND);
                 listener.getLogger().println(LeanIXLogAction.MANIFEST_NOTFOUND);
                 setLxmanifestpath(LeanIXLogAction.MANIFEST_NOTFOUND);
-                run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoicecentral());
+                run.setResult(Result.fromString(getJobresultchoice()));
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
@@ -154,7 +154,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 File folderPathFile = new File(Jenkins.get().getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout");
                 boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction, folderPathFile);
                 DependencyHandler dependencyHandler = new DependencyHandler();
-
 
 
                 String stage = env.get(deploymentstage);
@@ -172,7 +171,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     logAction.setVersion(version);
                 } else {
                     version = env.get("BUILD_ID");
-                    logAction.setStage(LeanIXLogAction.VERSION_NOTSET);
+                    logAction.setVersion(LeanIXLogAction.VERSION_NOTSET);
                     listener.getLogger().println(LeanIXLogAction.VERSION_NOTSET);
                     setDeploymentstage(LeanIXLogAction.VERSION_NOTSET);
                     listener.getLogger().println(defaultVersion + version + ".");
@@ -182,16 +181,22 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
                 // If SCM was checked out correctly
                 if (run.getResult() != null && manifestFileFound) {
-                    /*File projectDependencies = */
-                    dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
+
+                    File projectDependencies =
+                            dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
+                    if (projectDependencies == null) {
+                        logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
+                        listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
+                    }
 
                     String host = this.getHostname();
                     String jwtToken = getJWTToken(host);
                     if (jwtToken != null && !jwtToken.isEmpty()) {
-                        int responseCode = manifestFileHandler.sendFileToConnector(host, jwtToken, version, stage, dependencymanager);
+                        ConnectorHandler conHandler = new ConnectorHandler();
+                        int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
                         if (responseCode < 200 || responseCode > 308) {
                             logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
-                            run.setResult(DescriptorImpl.getJobresultchoicecentral());
+                            run.setResult(Result.fromString(getJobresultchoice()));
                         }
                     } else {
                         run.setResult(Result.fromString(getJobresultchoice()));
@@ -278,7 +283,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         public static final boolean defaultUseLeanIXConnector = true;
         private static final String[] DEPENDENCYMANAGERCHOICES = {"NPM", "GRADLE", "MAVEN"};
         private static Result jobresultchoicecentral = Result.SUCCESS;
-
 
 
         public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {

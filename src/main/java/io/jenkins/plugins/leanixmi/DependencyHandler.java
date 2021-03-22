@@ -20,19 +20,26 @@ public class DependencyHandler {
 
             ProcessBuilder processBuilder = new ProcessBuilder();
 
-            // TODO: the console-script must be placed correctly in the work-dir at first start of Jenkins or gotten from the resources webserver-folder
+            String filePath = "";
+
+            // TODO: the console-script could be moved to a String variable in a different class or sth. like that
             if (OS.contains("Windows")) {
-                processBuilder.command(Jenkins.get().getRootDir() + "\\leanix\\console_scripts\\build_licenses.bat", dmFilePath, dependencyManager);
+                filePath = Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/console_scripts/build_licenses.bat";
             } else {
-                String filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/build_licenses.sh";
-                File file = new File(filePath);
-                if (file.exists())
-                    file.setExecutable(true);
-                processBuilder.command(filePath, dmFilePath, dependencyManager);
+                filePath = Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/console_scripts/build_licenses.sh";
             }
             BufferedReader reader;
             try {
 
+                File file = new File(filePath);
+                if (file.exists()) {
+                    file.setExecutable(true);
+                }else{
+                    return null;
+                }
+
+                processBuilder.command(filePath, dmFilePath, dependencyManager);
+                // processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                 processBuilder.redirectErrorStream(true);
 
                 Process process = processBuilder.start();
@@ -46,24 +53,32 @@ public class DependencyHandler {
                 while ((line = reader.readLine()) != null) {
                     output.append(line + "\n");
                 }
-
+                reader.close();
                 int exitVal = process.waitFor();
                 if (exitVal == 0) {
                     System.out.println("Success!");
-
+                    if (dependencyManager.equalsIgnoreCase("npm")) {
+                        File depFile = new File(dmFilePath + "/dependencies.json");
+                        if (depFile.exists()) {
+                            return depFile;
+                        }
+                    } else if (dependencyManager.equalsIgnoreCase("maven")) {
+                        File depFile = new File(dmFilePath + "/target/generated-resources/licenses.xml");
+                        if (depFile.exists()) {
+                            return depFile;
+                        }
+                    }
                 } else {
                     System.out.println("ERROR!");
                 }
                 System.out.println(output);
-                reader.close();
-
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            return new File("");
+            return null;
         } else {
             return null;
         }
@@ -84,7 +99,7 @@ public class DependencyHandler {
                     return mavenPath.substring(0, mavenPath.length() - "pom.xml".length() - 1);
                 }
             } else if (dependencyManager.equalsIgnoreCase("gradle")) {
-                String gradlePath = searchDependencyFile(scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
+                String gradlePath = searchDependencyFile(scmRootFolderFile, "init.gradle", dependencyManager).getAbsolutePath();
                 if (gradlePath != null) {
                     return gradlePath;
                 }
