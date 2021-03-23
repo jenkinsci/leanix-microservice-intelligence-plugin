@@ -3,6 +3,7 @@ package io.jenkins.plugins.leanixmi;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
+import hudson.util.Secret;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -27,7 +28,7 @@ public class LIXConnectorComBuilderTest {
         LIXConnectorComBuilder testBuilder = new LIXConnectorComBuilder();
         testBuilder.setLxmanifestpath(lxManifestPath);
         testBuilder.setHostname("");
-        testBuilder.setApitoken("");
+        testBuilder.setApitoken(Secret.fromString(""));
         jenkins.assertEqualDataBoundBeans(testBuilder, project.getBuildersList().get(0));
     }
 
@@ -40,7 +41,7 @@ public class LIXConnectorComBuilderTest {
         LIXConnectorComBuilder lhs = new LIXConnectorComBuilder();
         lhs.setLxmanifestpath(lxManifestPath);
         lhs.setHostname("");
-        lhs.setApitoken("");
+        lhs.setApitoken(Secret.fromString(""));
         jenkins.assertEqualDataBoundBeans(lhs, project.getBuildersList().get(0));
     }
 

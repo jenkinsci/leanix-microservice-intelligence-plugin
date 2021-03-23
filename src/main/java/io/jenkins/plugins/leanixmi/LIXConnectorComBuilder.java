@@ -35,7 +35,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String lxmanifestpath;
     private boolean useleanixconnector;
     private String hostname = "";
-    private String apitoken;
+    private Secret apitoken;
     private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
@@ -74,11 +74,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     }
 
     @DataBoundSetter
-    public void setApitoken(String apitoken) {
+    public void setApitoken(Secret apitoken) {
         this.apitoken = apitoken;
     }
 
-    public String getApitoken() {
+    public Secret getApitoken() {
         return apitoken;
     }
 
@@ -164,7 +164,13 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 // If SCM was checked out correctly
                 if (run.getResult() != null && manifestFileFound) {
                     String host = this.getHostname();
-                    String jwtToken = getJWTToken(host);
+                    String apiToken;
+                    if(env.get("token") != null){
+                        apiToken = env.get("token");
+                    }else{
+                        apiToken = this.getApitoken().getPlainText();
+                    }
+                    String jwtToken = getJWTToken(host, apiToken);
                     if (jwtToken != null && !jwtToken.isEmpty()) {
                         int responseCode = manifestFileHandler.sendFileToConnector(host, jwtToken, version, stage);
                         if (responseCode < 200 || responseCode > 308) {
@@ -203,9 +209,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return configFound;
     }
 
-    private String getJWTToken(String hostname) {
+    private String getJWTToken(String hostname, String apiToken) {
         // test for the use of API-Token and requesting JWT-Token
-        String apiToken = this.getApitoken();
         String token;
 
         try {
