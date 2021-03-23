@@ -20,13 +20,13 @@ public class DependencyHandler {
 
             ProcessBuilder processBuilder = new ProcessBuilder();
 
-            String filePath = "";
+            // TODO: the console-script could be moved to a String variable in a different class or sth., then the path stuff will not be needed any longer
 
-            // TODO: the console-script could be moved to a String variable in a different class or sth. like that
+            String filePath = "";
             if (OS.contains("Windows")) {
-                filePath = Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/console_scripts/build_licenses.bat";
+                filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/build_licenses.bat";
             } else {
-                filePath = Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/console_scripts/build_licenses.sh";
+                filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/build_licenses.sh";
             }
             BufferedReader reader;
             try {
@@ -34,7 +34,7 @@ public class DependencyHandler {
                 File file = new File(filePath);
                 if (file.exists()) {
                     file.setExecutable(true);
-                }else{
+                } else {
                     return null;
                 }
 
@@ -128,7 +128,7 @@ public class DependencyHandler {
                 return file;
             } else {
                 if (getFileEnding(file.getName()).equals("gradle")) {
-                    File gradleFolder = new File(file.getAbsolutePath().substring(0, file.getName().length() - 1));
+                    File gradleFolder = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
                     return gradleFolder;
                 }
             }

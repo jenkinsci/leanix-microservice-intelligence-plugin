@@ -16,6 +16,7 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.*;
@@ -85,7 +86,7 @@ public class ManifestFileHandler {
 
             // reading in the YAML and checking that it is valid YAML and the outcome is valid JSON
             Reader fileReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-            Yaml yaml = new Yaml();
+            Yaml yaml = new Yaml(new SafeConstructor());
             String jsonString = "";
 
             try {

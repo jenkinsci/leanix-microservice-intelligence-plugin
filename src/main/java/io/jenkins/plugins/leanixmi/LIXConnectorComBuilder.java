@@ -128,6 +128,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
 
+
         if (getUseleanixconnector()) {
 
             if (jobresultchoice == null || jobresultchoice.equals("")) {
