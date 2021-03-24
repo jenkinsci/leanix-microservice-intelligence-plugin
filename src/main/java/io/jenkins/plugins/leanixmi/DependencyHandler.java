@@ -2,11 +2,12 @@ package io.jenkins.plugins.leanixmi;
 
 import jenkins.model.Jenkins;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 public class DependencyHandler {
 
@@ -38,7 +39,22 @@ public class DependencyHandler {
                     return null;
                 }
 
-                processBuilder.command(filePath, dmFilePath, dependencyManager);
+                if (dependencyManager.equalsIgnoreCase("gradle")) {
+                    String gradleInitFileName = "miCiCd-init.gradle";
+                    String gradleInitFileLocalPath = Jenkins.get().getRootDir() + "/leanix/console_scripts/" + gradleInitFileName;
+                    String url = Jenkins.get().getRootUrl();
+                    // copy the file from the webserver to the local directory if it doesn't exist yet
+                    if (url != null && !new File(gradleInitFileLocalPath).exists()) {
+                        String gradleScriptUrl = url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/console_scripts/" + gradleInitFileName;
+                        InputStream in = new URL(gradleScriptUrl).openStream();
+                        Files.copy(in, Paths.get(gradleInitFileLocalPath), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    processBuilder.command(filePath, dmFilePath, dependencyManager, gradleInitFileLocalPath);
+
+                } else {
+                    processBuilder.command(filePath, dmFilePath, dependencyManager);
+                }
+
                 // processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                 processBuilder.redirectErrorStream(true);
 
@@ -64,6 +80,11 @@ public class DependencyHandler {
                         }
                     } else if (dependencyManager.equalsIgnoreCase("maven")) {
                         File depFile = new File(dmFilePath + "/target/generated-resources/licenses.xml");
+                        if (depFile.exists()) {
+                            return depFile;
+                        }
+                    } else if (dependencyManager.equalsIgnoreCase("gradle")) {
+                        File depFile = new File(dmFilePath + "/build/reports/dependency-license/licenses.json");
                         if (depFile.exists()) {
                             return depFile;
                         }

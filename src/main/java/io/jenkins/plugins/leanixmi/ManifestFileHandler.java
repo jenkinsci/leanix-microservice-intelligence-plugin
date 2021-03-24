@@ -1,6 +1,6 @@
 package io.jenkins.plugins.leanixmi;
 
-import com.squareup.okhttp.*;
+
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Job;
