@@ -38,7 +38,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String dependencymanager = "";
     private boolean useleanixconnector;
     private String hostname = "";
-    private String apitoken;
+    private Secret apitoken;
     private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
@@ -89,11 +89,11 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     }
 
     @DataBoundSetter
-    public void setApitoken(String apitoken) {
+    public void setApitoken(Secret apitoken) {
         this.apitoken = apitoken;
     }
 
-    public String getApitoken() {
+    public Secret getApitoken() {
         return apitoken;
     }
 
@@ -191,7 +191,13 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     }
 
                     String host = this.getHostname();
-                    String jwtToken = getJWTToken(host);
+                    String apiToken;
+                    if(env.get("token") != null){
+                        apiToken = env.get("token");
+                    }else{
+                        apiToken = this.getApitoken().getPlainText();
+                    }
+                    String jwtToken = getJWTToken(host, apiToken);
                     if (jwtToken != null && !jwtToken.isEmpty()) {
                         ConnectorHandler conHandler = new ConnectorHandler();
                         int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
@@ -233,9 +239,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return configFound;
     }
 
-    private String getJWTToken(String hostname) {
+    private String getJWTToken(String hostname, String apiToken) {
         // test for the use of API-Token and requesting JWT-Token
-        String apiToken = this.getApitoken();
         String token;
 
         try {

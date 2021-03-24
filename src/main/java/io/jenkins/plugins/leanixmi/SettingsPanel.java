@@ -6,6 +6,7 @@ import hudson.model.Result;
 import hudson.model.RootAction;
 import hudson.util.FormApply;
 import hudson.util.Secret;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -29,7 +30,6 @@ public class SettingsPanel implements RootAction {
     private String lixhost = "";
     private boolean lixtokenhostempty = false;
     private String jobresultchoice = Result.SUCCESS.toString();
-    private SettingsHandler settingsHandler;
 
 
     public SettingsPanel() {
@@ -78,20 +78,23 @@ public class SettingsPanel implements RootAction {
         } else {
             //this line is used only when toggle for settingspanel is true.
             //LIXConnectorComBuilder.DescriptorImpl.setApitokenpanel(getApitokenpanel());
-            settingsHandler.saveSetting("lixhost", lixHostObject.toString());
-            setTokennhostsaved(true);
+            LeanIXMIGlobalConfiguration lixgc = GlobalConfiguration.all().get(LeanIXMIGlobalConfiguration.class);
+            if (lixgc != null) {
+                lixgc.setLixhost(lixHostObject.toString());
+                setTokennhostsaved(true);
+            }
         }
         response.sendRedirect("");
     }
 
     public void doSaveJobResultChoice(final StaplerRequest request, final StaplerResponse response) throws Exception {
-
-        // ListBoxModel m = new ListBoxModel(new ListBoxModel.Option(Result.SUCCESS.toString()), new ListBoxModel.Option(Result.ABORTED.toString()), new ListBoxModel.Option(Result.FAILURE.toString()), new ListBoxModel.Option(Result.NOT_BUILT.toString()), new ListBoxModel.Option(Result.UNSTABLE.toString()));
-
         JSONObject form = request.getSubmittedForm();
         this.jobresultchoice = form.getString("jobresultchoice");
         setJobResultChoiceToBuildJob();
-        settingsHandler.saveSetting("jobresultchoice", jobresultchoice);
+        LeanIXMIGlobalConfiguration lixgc = GlobalConfiguration.all().get(LeanIXMIGlobalConfiguration.class);
+        if (lixgc != null) {
+            lixgc.setJobresultchoice(jobresultchoice);
+        }
         response.sendRedirect("");
     }
 
@@ -106,15 +109,19 @@ public class SettingsPanel implements RootAction {
     }
 
     private void retrieveSettings() {
-        settingsHandler = new SettingsHandler();
-        String tmpResultChoice = (String) settingsHandler.getSettingsObj().get("jobresultchoice");
-        if (tmpResultChoice != null && !tmpResultChoice.equals("")) {
-            jobresultchoice = tmpResultChoice;
-            setJobResultChoiceToBuildJob();
-        }
-        String tmpLixHost = (String) settingsHandler.getSettingsObj().get("lixhost");
-        if (tmpLixHost != null && !tmpLixHost.equals("")) {
-            lixhost = tmpLixHost;
+        LeanIXMIGlobalConfiguration lixgc = GlobalConfiguration.all().get(LeanIXMIGlobalConfiguration.class);
+        if (lixgc != null) {
+            String tmpResultChoice = lixgc
+                    .getJobresultchoice();
+            if (tmpResultChoice != null && !tmpResultChoice.equals("")) {
+                jobresultchoice = tmpResultChoice;
+                setJobResultChoiceToBuildJob();
+            }
+            String tmpLixHost = lixgc
+                    .getLixhost();
+            if (tmpLixHost != null && !tmpLixHost.equals("")) {
+                lixhost = tmpLixHost;
+            }
         }
     }
 
@@ -122,9 +129,6 @@ public class SettingsPanel implements RootAction {
         Result res;
 
         switch (jobresultchoice) {
-            case "SUCCESS":
-                res = Result.SUCCESS;
-                break;
             case "ABORTED":
                 res = Result.ABORTED;
                 break;
