@@ -138,7 +138,7 @@ public class JsonPipelineConfiguration {
     private void setFilePathsAndDirectories(Jenkins jenkins) {
         String url = jenkins.getRootUrl();
         if (url != null) {
-            setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix_cicd/jsonpipelineconfiguration/defaultjsonconfig.json");
+            setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/jsonpipelineconfiguration/defaultjsonconfig.json");
         }
         setCustomFileDirectory(jenkins.getRootDir() + "/leanix/jsonPipelineConfiguration");
         setCustomFilePath(jenkins.getRootDir() + "/leanix/jsonPipelineConfiguration/customJsonConfig.json");
