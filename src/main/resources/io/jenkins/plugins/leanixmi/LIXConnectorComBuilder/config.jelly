@@ -4,7 +4,7 @@
     <f:entry title="${%LeanIX-Manifest-Path (readonly)}" field="lxmanifestpath">
         <f:readOnlyTextbox default="Please specify this path in the plugin configuration."/>
     </f:entry>
-    <f:entry title="${%Hostname}" field="hostname">
+    <f:entry title="${%Hostname}" field="hostname" description="${%LeanIXHostNameDescr}">
         <f:textbox/>
     </f:entry>
     <f:entry title="${%Apitoken}" field="apitoken"
