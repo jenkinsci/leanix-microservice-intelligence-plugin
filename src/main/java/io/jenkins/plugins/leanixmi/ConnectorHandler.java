@@ -1,22 +1,17 @@
 package io.jenkins.plugins.leanixmi;
 
 
-import com.sun.jndi.toolkit.url.Uri;
-import io.jenkins.cli.shaded.org.apache.commons.io.FileUtils;
 import okhttp3.*;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
 public class ConnectorHandler {
 
     public int sendFilesToConnector(String hostname, String jwtToken, String deploymentVersion, String deploymentStage, String dependencyManager, File projectDependencies, String manifestJSON) throws IOException {
 
-        String boundary = Long.toString(System.currentTimeMillis());
+        // String boundary = Long.toString(System.currentTimeMillis());
 
         JSONObject dataObj = new JSONObject();
         dataObj.put("version", deploymentVersion);

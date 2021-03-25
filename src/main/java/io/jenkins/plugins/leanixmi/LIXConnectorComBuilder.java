@@ -1,5 +1,6 @@
 package io.jenkins.plugins.leanixmi;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -74,7 +75,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundSetter
     public void setDependencymanager(String dependencymanager) {
-        if (Arrays.stream(DescriptorImpl.DEPENDENCYMANAGERCHOICES).anyMatch(dependencymanager::equals)) {
+        if (Arrays.asList(DescriptorImpl.DEPENDENCYMANAGERCHOICES).contains(dependencymanager)) {
             this.dependencymanager = dependencymanager;
         }
     }
@@ -126,7 +127,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     }
 
     @Override
-    public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+    public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
 
 
         if (getUseleanixconnector()) {
@@ -137,7 +138,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
             boolean configFound;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
-
+            logAction.setDependencymanager(dependencymanager);
 
             Job job = run.getParent();
             configFound = findJSONPipelineConfig(job);
@@ -188,6 +189,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (projectDependencies == null) {
                         logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
                         listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
+                        run.setResult(Result.fromString(getJobresultchoice()));
                     }
 
                     String host = this.getHostname();
@@ -309,7 +311,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         public FormValidation doCheckDependencymanager(@QueryParameter String value)
                 throws IOException, ServletException {
-            if (!value.equals("") && !Arrays.stream(DEPENDENCYMANAGERCHOICES).anyMatch(value::equals)) {
+            if (!value.equals("") && Arrays.stream(DEPENDENCYMANAGERCHOICES).noneMatch(value::equals)) {
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_dependencyManagerChoiceWrong());
             }
             return FormValidation.ok();
@@ -332,6 +334,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return true;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.LIXConnectorComBuilder_DescriptorImpl_DisplayLXManifestPath();

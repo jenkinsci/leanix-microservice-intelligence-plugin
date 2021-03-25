@@ -37,16 +37,16 @@
 
     <f:entry title="${%Dependency manager of the SCM}" field="dependencymanager">
         <select name="dependencymanager">
-            <option selected="${it.dependencymanager.equals('')? 'true':null}" value="">
-
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('')? 'true':null}" value="">
+                --
             </option>
-            <option selected="${it.dependencymanager.equals('npm')? 'true':null}" value="NPM">
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('npm')? 'true':null}" value="NPM">
                 npm
             </option>
-            <option selected="${it.dependencymanager.equals('maven')? 'true':null}" value="MAVEN">
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('maven')? 'true':null}" value="MAVEN">
                 maven
             </option>
-            <option selected="${it.dependencymanager.equals('gradle')? 'true':null}" value="GRADLE">
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('gradle')? 'true':null}" value="GRADLE">
                 gradle
             </option>
         </select>

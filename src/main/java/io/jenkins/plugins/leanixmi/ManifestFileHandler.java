@@ -11,7 +11,6 @@ import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import jenkins.model.Jenkins;
 import jenkins.triggers.SCMTriggerItem;
-import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;

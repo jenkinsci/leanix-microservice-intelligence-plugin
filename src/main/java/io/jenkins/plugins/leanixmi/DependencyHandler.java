@@ -3,9 +3,11 @@ package io.jenkins.plugins.leanixmi;
 import jenkins.model.Jenkins;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
@@ -24,11 +26,13 @@ public class DependencyHandler {
             // TODO: the console-script could be moved to a String variable in a different class or sth., then the path stuff will not be needed any longer
 
             String filePath = "";
+            String fileName = "";
             if (OS.contains("Windows")) {
-                filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/build_licenses.bat";
+                fileName = "build_licenses.bat";
             } else {
-                filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/build_licenses.sh";
+                fileName = "build_licenses.sh";
             }
+            filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/" + fileName;
             BufferedReader reader;
             try {
 
@@ -36,18 +40,17 @@ public class DependencyHandler {
                 if (file.exists()) {
                     file.setExecutable(true);
                 } else {
-                    return null;
+                    if (copyFileFromWebappToLocal("/console_scripts/" + fileName, "/console_scripts/" + fileName) == null) {
+                        return null;
+                    }
                 }
 
                 if (dependencyManager.equalsIgnoreCase("gradle")) {
                     String gradleInitFileName = "miCiCd-init.gradle";
                     String gradleInitFileLocalPath = Jenkins.get().getRootDir() + "/leanix/console_scripts/" + gradleInitFileName;
-                    String url = Jenkins.get().getRootUrl();
                     // copy the file from the webserver to the local directory if it doesn't exist yet
-                    if (url != null && !new File(gradleInitFileLocalPath).exists()) {
-                        String gradleScriptUrl = url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/console_scripts/" + gradleInitFileName;
-                        InputStream in = new URL(gradleScriptUrl).openStream();
-                        Files.copy(in, Paths.get(gradleInitFileLocalPath), StandardCopyOption.REPLACE_EXISTING);
+                    if (!new File(gradleInitFileLocalPath).exists()) {
+                        copyFileFromWebappToLocal("/console_scripts/" + gradleInitFileName, "/console_scripts/" + gradleInitFileName);
                     }
                     processBuilder.command(filePath, dmFilePath, dependencyManager, gradleInitFileLocalPath);
 
@@ -112,12 +115,12 @@ public class DependencyHandler {
             if (dependencyManager.equalsIgnoreCase("npm")) {
                 String npmPath = searchDependencyFile(scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
                 if (npmPath != null) {
-                    return npmPath.substring(0, npmPath.length() - "package.json".length() - 1);
+                    return npmPath;
                 }
             } else if (dependencyManager.equalsIgnoreCase("maven")) {
                 String mavenPath = searchDependencyFile(scmRootFolderFile, "pom.xml", dependencyManager).getAbsolutePath();
                 if (mavenPath != null) {
-                    return mavenPath.substring(0, mavenPath.length() - "pom.xml".length() - 1);
+                    return mavenPath;
                 }
             } else if (dependencyManager.equalsIgnoreCase("gradle")) {
                 String gradlePath = searchDependencyFile(scmRootFolderFile, "init.gradle", dependencyManager).getAbsolutePath();
@@ -163,5 +166,21 @@ public class DependencyHandler {
             return fileName.substring(i + 1);
         }
         return "";
+    }
+
+    private String copyFileFromWebappToLocal(String relativeWebAppPath, String relativeLocalFilePath) throws IOException {
+        String rootUrl = Jenkins.get().getRootUrl();
+        String absoluteLocalFilePath = Jenkins.get().getRootDir() + "/leanix" + relativeLocalFilePath;
+        if (rootUrl != null) {
+            String fileURL = rootUrl.substring(0, rootUrl.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence" + relativeWebAppPath;
+            InputStream in = new URL(fileURL).openStream();
+            Path dirToCreate = Paths.get(absoluteLocalFilePath).getParent();
+            if (dirToCreate != null) {
+                Files.createDirectories(dirToCreate);
+                long result = Files.copy(in, Paths.get(absoluteLocalFilePath), StandardCopyOption.REPLACE_EXISTING);
+                return String.valueOf(result);
+            }
+        }
+        return null;
     }
 }
