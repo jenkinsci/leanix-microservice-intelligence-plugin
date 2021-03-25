@@ -309,6 +309,15 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return FormValidation.ok();
         }
 
+        public FormValidation doCheckHostname(@QueryParameter String value)
+                throws IOException, ServletException {
+            if (value.length() == 0)
+                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingHost());
+            if (value.length() < 3)
+                return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_hostTooShort());
+            return FormValidation.ok();
+        }
+
         public FormValidation doCheckDependencymanager(@QueryParameter String value)
                 throws IOException, ServletException {
             if (!value.equals("") && Arrays.stream(DEPENDENCYMANAGERCHOICES).noneMatch(value::equals)) {
