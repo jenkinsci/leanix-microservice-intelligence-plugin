@@ -3,7 +3,6 @@ package io.jenkins.plugins.leanixmi;
 import jenkins.model.Jenkins;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
