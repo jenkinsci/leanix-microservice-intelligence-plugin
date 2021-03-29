@@ -100,7 +100,7 @@ In addition, an SCM provider (e.g. Git) must be set up correctly for the project
 In order to add the LeanIX plugin to the project, a corresponding build step must be created. To do this, click in the configuration of the Freestyle project under "Build" on "Add build step" and select "LeanIX Microservice Intelligence".
 
 
-<img src="images/choose_build_step.png" alt="Add plugin to the build steps." width="500"/>
+<img src="images/choose_build_step.png" alt="Add plugin to the build steps." width="350"/>
 
 In the input mask with the title "LeanIX Microservice Intelligence" that then appears, set the appropriate values ​​or select from the drop-down menus:
 * LeanIX-Manifest-Path -readonly- : This field is readonly, it will be filled automatically after the first run of the plugin. This is the path to the manifest file that is specified in the central configuration. If it is not specified, the default will be "/lx-manifest.yml".
