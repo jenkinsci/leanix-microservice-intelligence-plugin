@@ -81,7 +81,7 @@ This is an example of a configuration:
 
 ##### 2.
 In the second area, "Job result", you can make the basic setting for all jobs / pipelines, which impact a failure of the LeanIX build step will have for the entire job or the entire pipeline. One of the five options that Jenkins offers as a result can be selected here. If the plugin job fails, the selected result is set as the end result of the executed job. The default value for the result is "SUCCESS" which means that a failure of the LeanIX-Plugin does not make the pipeline/job fail.
-<img src="images/job_result.png" alt="Job result setting" width="350"/>
+<img src="images/job_result.png" alt="Job result setting" width="500"/>
 
 
 ### Individual configuration of pipelines and jobs
