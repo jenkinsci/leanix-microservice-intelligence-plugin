@@ -37,7 +37,9 @@ This section is only important if you want to use the LeanIX plugin in scripted 
 #### Central configuration of the plugin
 
 The plugin offers the possibility of central configuration of important settings. For these configurations, after installation, there is an area on the basic level "Dashboard" of Jenkins with the title "LeanIX Microservice Intelligence".
-![Central settings](images/settings_link.png)
+
+
+<img src="images/settings_link.png" alt="Central settings" width="500"/>
 
 When you call this up, you will find several areas in which settings can be made.
 
@@ -96,7 +98,9 @@ Otherwise the plugin "Environment Injector" (https://plugins.jenkins.io/envinjec
 In addition, an SCM provider (e.g. Git) must be set up correctly for the project and the LeanIX manifest file must be located there under the path that is specified in the central configuration for this job.
 
 In order to add the LeanIX plugin to the project, a corresponding build step must be created. To do this, click in the configuration of the Freestyle project under "Build" on "Add build step" and select "LeanIX Microservice Intelligence".
-![Add plugin to the build steps.](images/choose_build_step.png)
+
+
+<img src="images/choose_build_step.png" alt="Add plugin to the build steps." width="500"/>
 
 In the input mask with the title "LeanIX Microservice Intelligence" that then appears, set the appropriate values ​​or select from the drop-down menus:
 * LeanIX-Manifest-Path -readonly- : This field is readonly, it will be filled automatically after the first run of the plugin. This is the path to the manifest file that is specified in the central configuration. If it is not specified, the default will be "/lx-manifest.yml".
