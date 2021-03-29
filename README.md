@@ -24,7 +24,7 @@ The configuration of the LeanIX Microservice Plugin is divided into three parts:
 * [Configuration of individual pipelines and jobs in which the plugin is to be used.](#configuration-of-individual-pipelines-and-jobs)
 
 
-#### Setting up secrets in the Manage Jenkins area.
+### Setting up secrets in the Manage Jenkins area.
 This section is only important if you want to use the LeanIX plugin in scripted pipelines. For this purpose, a new credentials record with the following parameters is created in Jenkins in the "Manage Jenkins" -> "Security" -> "Manage Credentials" area (a detailed description of how to create credentials can be found at the following link: https: // www .jenkins.io / doc / book / using / using-credentials /):
 * Scope: It is best to select "global", unless security reasons or company guidelines speak against it.
 * Username: The host and thus the part of a URL that specifies the region of the LeanIX service in which the workspace is located, to which the data extracted by the plugin is to be sent.
@@ -34,12 +34,12 @@ This section is only important if you want to use the LeanIX plugin in scripted 
 
 ![Example for credentials](images/credentials.png)
 
-#### Central configuration of the plugin
+### Central configuration of the plugin
 
 The plugin offers the possibility of central configuration of important settings. For these configurations, after installation, there is an area on the basic level "Dashboard" of Jenkins with the title "LeanIX Microservice Intelligence".
 
 
-<img src="images/settings_link.png" alt="Central settings" width="500"/>
+<img src="images/settings_link.png" alt="Central settings" width="400"/>
 
 When you call this up, you will find several areas in which settings can be made.
 
@@ -84,9 +84,9 @@ In the second area, "Job result", you can make the basic setting for all jobs / 
 ![Job result setting](images/job_result.png)
 
 
-#### Individual configuration of pipelines and jobs
+### Individual configuration of pipelines and jobs
 
-##### Configuring Freestyle Projects
+#### Configuring Freestyle Projects
 
 To configure a freestyle project, the stage and version of the job must be defined in environment variables.
 If you have a way to configure this, the name of the variables you use can be set via the central configuration of the plugin, see above.
@@ -112,7 +112,7 @@ In the input mask with the title "LeanIX Microservice Intelligence" that then ap
 
 ![Example configuration for a freestyle project](images/freestyle_project_configuration.png)
 
-##### Configuring Pipeline projects
+#### Configuring Pipeline projects
 
 In your pipeline definition, the variables for stage and version of the build must be set as environment variables. Define the variable names used in the central configuration (see above), otherwise "stage" is assumed for the stage variable and "version" for the version variable. If you don't have your own way of defining it, you can define these variables in the pipeline as follows:
 
