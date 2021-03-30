@@ -13,6 +13,7 @@ public class LeanIXLogAction implements RunAction2 {
     private String version;
     private String dependencymanager;
     public static final String TOKEN_FAILED = "Could not send the LeanIX-data, because the Authentication failed. Please check your Hostname and API-Token.";
+    public static final String CONFIGFILENOTFOUND = "The configuration file for the LeanIX Plugin could not be found.";
     public static final String SCM_FAILED = "Could not send the LeanIX-data, because the SCM could not be accessed correctly.";
     public static final String MANIFEST_WRONG = "The manifest file could not be parsed, please check that it is correct.";
     public static final String MANIFEST_NOTFOUND = "The manifest file could not be found in your Source Code Management System, please check that the path you specified is correct.";
