@@ -38,6 +38,7 @@ The configuration of the LeanIX Microservice Plugin is divided into three parts:
 
 <br>
 This section is only important if you want to use the LeanIX plugin in scripted pipelines. For this purpose, a new credentials record with the following parameters is created in Jenkins in the "Manage Jenkins" -> "Security" -> "Manage Credentials" area (a detailed description of how to create credentials can be found at the following link: https:www.jenkins.io/doc/book/using/using-credentials/):
+
 * **Scope**: It is best to select "global", unless security reasons or company guidelines speak against it.
 * **Username**: The host and thus the part of a URL that specifies the region of the LeanIX service in which the workspace is located, to which the data extracted by the plugin is to be sent.
 * **Password**: A valid API token for the LeanIX workspace that matches the host.
@@ -63,6 +64,7 @@ When you call this up, you will find two areas in which settings can be made.
 ##### 1.
 
 <br>
+
 In the uppermost area with the title **"Pipeline Configuration in JSON format"** there is an input field in which configurations in JSON format can be inserted.
 The structure of these configurations is as follows:
 
@@ -177,6 +179,7 @@ A pipeline step with a built-in LeanIX plugin looks like this:
 
 <br>
 <br>
+
 When the configuration of the project or pipeline is complete, the start of a build (Build now) will include the execution of the LeanIX plug-in. After execution and if the LeanIX plug-in step has been reached, there is a menu item called **"LeanIX Microservice Intelligence Log"** in the monitoring area of each build (click on the build number in the Pipeline or Project area). In this area you will find the information which values were used for the build by the LeanIX plugin as well as information on the result of the step in the **"Status"** section. Possible errors will be mentioned here.
 
 ![LeanIX-Log.](images/leanix_log.png)
