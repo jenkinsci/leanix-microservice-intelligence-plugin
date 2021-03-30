@@ -1,13 +1,14 @@
 
 
 ## Introduction
-
+<br>
+<br>
 This plugin connects Jenkins Jobs with your LeanIX workspace. When the plugin is integrated in your Jenkins pipelines and jobs, information on your services built and deployed with Jenkins can be called up in LeaxIX factsheets .
 
 
 ## Prerequisites
-
-
+<br>
+<br>
 In order to be able to use the LeanIX Microservice Intelligence Plugin, the following requirements must first be met:
 
 * The LeanIX Microservice Intelligence plugin must be installed: https://www.jenkins.io/doc/book/managing/plugins/
@@ -19,7 +20,8 @@ In order to be able to use the LeanIX Microservice Intelligence Plugin, the foll
 
 ## Configuration
 
-
+<br>
+<br>
 The configuration of the LeanIX Microservice Plugin is divided into three parts:
 
 * [Setting up secrets in the Jenkins administration](#setting-up-secrets-in-the-manage-jenkins-area),
@@ -28,6 +30,8 @@ The configuration of the LeanIX Microservice Plugin is divided into three parts:
 
 
 ### Setting up secrets in the Manage Jenkins area.
+
+<br>
 This section is only important if you want to use the LeanIX plugin in scripted pipelines. For this purpose, a new credentials record with the following parameters is created in Jenkins in the "Manage Jenkins" -> "Security" -> "Manage Credentials" area (a detailed description of how to create credentials can be found at the following link: https:www.jenkins.io/doc/book/using/using-credentials/):
 * **Scope**: It is best to select "global", unless security reasons or company guidelines speak against it.
 * **Username**: The host and thus the part of a URL that specifies the region of the LeanIX service in which the workspace is located, to which the data extracted by the plugin is to be sent.
@@ -39,7 +43,7 @@ This section is only important if you want to use the LeanIX plugin in scripted 
 
 ### Central configuration of the plugin
 
-
+<br>
 The plugin offers the possibility of central configuration of important settings. For these configurations, after installation, there is an area on the basic level "Dashboard" of Jenkins with the title "LeanIX Microservice Intelligence".
 
 
@@ -49,6 +53,7 @@ When you call this up, you will find two areas in which settings can be made.
 
 ##### 1.
 
+<br>
 In the uppermost area with the title **"Pipeline Configuration in JSON format"** there is an input field in which configurations in JSON format can be inserted.
 The structure of these configurations is as follows:
 
@@ -88,6 +93,7 @@ This is an example of a configuration:
 
 ##### 2.
 
+<br>
 In the second area, "Job result", you can make the basic setting for all jobs / pipelines, which impact a failure of the LeanIX build step will have for the entire job or the entire pipeline. One of the five options that Jenkins offers as a result can be selected here. If the plugin fails, the selected result is set as the end result of the executed job. The default value for the result is "SUCCESS" which means that a failure of the LeanIX-Plugin does not make the pipeline/job fail.
 
 <img src="images/job_result.png" alt="Job result setting" width="600"/>
@@ -95,10 +101,11 @@ In the second area, "Job result", you can make the basic setting for all jobs / 
 
 ### Individual configuration of pipelines and jobs
 
+<br>
 
 #### Configuring Freestyle Projects
 
-
+<br>
 To configure a freestyle project, the stage and version of the job must be defined in environment variables.
 If you have a way to configure this, the name of the variables you use can be set via the central configuration of the plugin, see above.
 Otherwise the plugin "Environment Injector" (https://plugins.jenkins.io/envinject/) available for Jenkins can be used. There stage and version must be defined in such a way that the names used match those used in the central configuration. In the following example in the central configuration "deploymentStageVarName" was
@@ -125,7 +132,7 @@ In the input mask with the title "LeanIX Microservice Intelligence" that then ap
 
 #### Configuring Pipeline projects
 
-
+<br>
 In your pipeline definition, the variables for stage and version of the build must be set as environment variables. Define the variable names used in the central configuration (see above), otherwise "stage" is assumed for the stage variable and "version" for the version variable. If you don't have your own way of defining it, you can define these variables in the pipeline as follows:
 
          environment {
@@ -154,7 +161,8 @@ A pipeline step with a built-in LeanIX plugin looks like this:
 
 ## Usage
 
-
+<br>
+<br>
 When the configuration of the project or pipeline is complete, the start of a build (Build now) will include the execution of the LeanIX plug-in. After execution and if the LeanIX plug-in step has been reached, there is a menu item called **"LeanIX Microservice Intelligence Log"** in the monitoring area of each build (click on the build number in the Pipeline or Project area). In this area you will find the information which values were used for the build by the LeanIX plugin as well as information on the result of the step in the **"Status"** section. Possible errors will be mentioned here.
 
 ![LeanIX-Log.](images/leanix_log.png)
