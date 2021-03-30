@@ -43,7 +43,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
-    private static final String defaultVersion = "Default version number used is BUILD_ID ";
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
@@ -143,23 +142,24 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             Job job = run.getParent();
             configFound = findJSONPipelineConfig(job);
             if (!configFound) {
-                logAction.setLxManifestPath(LeanIXLogAction.MANIFEST_NOTFOUND);
-                logAction.setResult(LeanIXLogAction.MANIFEST_NOTFOUND);
-                listener.getLogger().println(LeanIXLogAction.MANIFEST_NOTFOUND);
-                setLxmanifestpath(LeanIXLogAction.MANIFEST_NOTFOUND);
                 run.setResult(Result.fromString(getJobresultchoice()));
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
 
-                ManifestFileHandler manifestFileHandler = new ManifestFileHandler(jobresultchoice);
-                File folderPathFile = new File(Jenkins.get().getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout");
-                boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction, folderPathFile);
-                DependencyHandler dependencyHandler = new DependencyHandler();
 
+                // Dealing with stage and version here
+                // Setting defaul values "stage" and "version"
+                String stage = "stage";
+                String version = "version";
+                // env.get can lead to a NullPointerException in case that the variable is not existing
+                try {
+                    stage = env.get(deploymentstage);
+                    version = env.get(deploymentversion);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
-                String stage = env.get(deploymentstage);
-                String version = env.get(deploymentversion);
                 if (stage != null && !stage.equals("")) {
                     listener.getLogger().println("Your deployment stage is " + stage + ".");
                     logAction.setStage(stage);
@@ -168,49 +168,62 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     listener.getLogger().println(LeanIXLogAction.STAGE_NOTSET);
                     setDeploymentstage(LeanIXLogAction.STAGE_NOTSET);
                 }
+
+                // Version is mandatory, don't go on without it!
                 if (version != null && !version.equals("")) {
                     listener.getLogger().println("Your deployment version is " + version + ".");
                     logAction.setVersion(version);
-                } else {
-                    version = env.get("BUILD_ID");
-                    logAction.setVersion(LeanIXLogAction.VERSION_NOTSET);
-                    listener.getLogger().println(LeanIXLogAction.VERSION_NOTSET);
-                    setDeploymentstage(LeanIXLogAction.VERSION_NOTSET);
-                    listener.getLogger().println(defaultVersion + version + ".");
-                    logAction.setVersion(version);
-                }
 
 
-                // If SCM was checked out correctly
-                if (run.getResult() != null && manifestFileFound) {
+                    ManifestFileHandler manifestFileHandler = new ManifestFileHandler(jobresultchoice);
+                    File folderPathFile = new File(Jenkins.get().getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout");
+                    boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction, folderPathFile);
+                    DependencyHandler dependencyHandler = new DependencyHandler();
 
-                    File projectDependencies =
-                            dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
-                    if (projectDependencies == null) {
-                        logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
-                        listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
-                        run.setResult(Result.fromString(getJobresultchoice()));
-                    }
 
-                    String host = this.getHostname();
-                    String apiToken;
-                    if(env.get("token") != null){
-                        apiToken = env.get("token");
-                    }else{
-                        apiToken = this.getApitoken().getPlainText();
-                    }
-                    String jwtToken = getJWTToken(host, apiToken);
-                    if (jwtToken != null && !jwtToken.isEmpty()) {
-                        ConnectorHandler conHandler = new ConnectorHandler();
-                        int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
-                        if (responseCode < 200 || responseCode > 308) {
-                            logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
+                    // If SCM was checked out correctly
+                    if (run.getResult() != null && manifestFileFound) {
+
+                        File projectDependencies =
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
+                        if (projectDependencies == null) {
+                            logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
+                            listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
                             run.setResult(Result.fromString(getJobresultchoice()));
                         }
+
+                        String host = this.getHostname();
+                        String apiToken;
+                        if (env.get("token") != null) {
+                            apiToken = env.get("token");
+                        } else {
+                            apiToken = this.getApitoken().getPlainText();
+                        }
+                        String jwtToken = getJWTToken(host, apiToken);
+                        if (jwtToken != null && !jwtToken.isEmpty()) {
+                            ConnectorHandler conHandler = new ConnectorHandler();
+                            int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
+                            if (responseCode < 200 || responseCode > 308) {
+                                logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
+                                run.setResult(Result.fromString(getJobresultchoice()));
+                            }
+                        } else {
+                            run.setResult(Result.fromString(getJobresultchoice()));
+                            logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+                        }
+
                     } else {
-                        run.setResult(Result.fromString(getJobresultchoice()));
-                        logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+                        logAction.setLxManifestPath(LeanIXLogAction.MANIFEST_NOTFOUND);
+                        logAction.setResult(LeanIXLogAction.MANIFEST_NOTFOUND);
+                        listener.getLogger().println(LeanIXLogAction.MANIFEST_NOTFOUND);
+                        setLxmanifestpath(LeanIXLogAction.MANIFEST_NOTFOUND);
                     }
+                } else {
+                    logAction.setVersion(LeanIXLogAction.VERSION_NOTSET);
+                    listener.getLogger().println(LeanIXLogAction.VERSION_NOTSET);
+                    logAction.setResult("Could not finish successfully: " + LeanIXLogAction.VERSION_NOTSET);
+                    setDeploymentversion(LeanIXLogAction.VERSION_NOTSET);
+                    run.setResult(Result.fromString(getJobresultchoice()));
                 }
             }
             run.addAction(logAction);

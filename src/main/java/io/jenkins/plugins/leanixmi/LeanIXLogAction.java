@@ -19,7 +19,7 @@ public class LeanIXLogAction implements RunAction2 {
     public static final String API_CALL_FAILED = "Could not send the LeanIX-data. The API responded with an error. Please check your host name and the manifest.yml file in your version management tool.";
     public static final String SUCCESS = "Success: The LeanIX-data was transmitted successfully.";
     public static final String STAGE_NOTSET = "Deployment stage variable value is not set in jenkins environment.";
-    public static final String VERSION_NOTSET = "Deployment version variable value is not set in jenkins environment.";
+    public static final String VERSION_NOTSET = "Deployment version variable or deployment version value is not set in jenkins environment.";
     public static final String DEPENDENCIES_NOT_GENERATED = "The dependencies of your project couldn't be generated.";
 
 
