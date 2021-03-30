@@ -2,11 +2,13 @@
 
 ## Introduction
 <br>
-<br>
+
 This plugin connects Jenkins Jobs with your LeanIX workspace. When the plugin is integrated in your Jenkins pipelines and jobs, information on your services built and deployed with Jenkins can be called up in LeaxIX factsheets .
 
+<br>
 
 ## Prerequisites
+
 <br>
 <br>
 In order to be able to use the LeanIX Microservice Intelligence Plugin, the following requirements must first be met:
@@ -17,6 +19,8 @@ In order to be able to use the LeanIX Microservice Intelligence Plugin, the foll
   For projects such as a **Freestyle project**, in which the plugin can be added via UI as a build step, the plugin for injecting environment variables might be required instead: https://plugins.jenkins.io/envinject/
 * An **SCM provider** (e.g. Git) must be configured for the pipeline to be used and the possibly necessary plug-in installed.
 * The **manifest file** made available by LeanIX and filled with the appropriate values is located in the corresponding repository, so that it can be accessed by the plugin. The contents is sent by the plugin to the LeanIX interface.
+  
+<br>
 
 ## Configuration
 
@@ -28,6 +32,7 @@ The configuration of the LeanIX Microservice Plugin is divided into three parts:
 * [Central configuration of the plugin](#central-configuration-of-the-plugin),
 * [Configuration of individual pipelines and jobs in which the plugin is to be used.](#individual-configuration-of-pipelines-and-jobs)
 
+<br>
 
 ### Setting up secrets in the Manage Jenkins area.
 
@@ -41,6 +46,8 @@ This section is only important if you want to use the LeanIX plugin in scripted 
 
 ![Example for credentials](images/credentials.png)
 
+<br>
+
 ### Central configuration of the plugin
 
 <br>
@@ -50,6 +57,8 @@ The plugin offers the possibility of central configuration of important settings
 <img src="images/settings_link.png" alt="Central settings" width="400"/>
 
 When you call this up, you will find two areas in which settings can be made.
+
+<br>
 
 ##### 1.
 
@@ -91,6 +100,8 @@ This is an example of a configuration:
       }
     }
 
+<br>
+
 ##### 2.
 
 <br>
@@ -98,6 +109,7 @@ In the second area, "Job result", you can make the basic setting for all jobs / 
 
 <img src="images/job_result.png" alt="Job result setting" width="600"/>
 
+<br>
 
 ### Individual configuration of pipelines and jobs
 
@@ -130,6 +142,8 @@ In the input mask with the title "LeanIX Microservice Intelligence" that then ap
 
 ![Example configuration for a freestyle project](images/freestyle_project_configuration.png)
 
+<br>
+
 #### Configuring Pipeline projects
 
 <br>
@@ -157,7 +171,7 @@ A pipeline step with a built-in LeanIX plugin looks like this:
             }
         }
 
-
+<br>
 
 ## Usage
 
