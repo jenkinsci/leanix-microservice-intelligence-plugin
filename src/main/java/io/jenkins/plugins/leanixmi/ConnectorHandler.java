@@ -41,7 +41,10 @@ public class ConnectorHandler {
                             RequestBody.create(MediaType.parse("application/json"), dataObj.toJSONString()));
             // TODO: This part doesn't work yet!
             if (projectDependencies != null) {
-                builder.addFormDataPart("dependencies", projectDependencies.getName(), RequestBody.create(MediaType.parse("application/json"), projectDependencies));
+              // builder.addFormDataPart("dependencies", null, RequestBody.create(MediaType.parse(""), projectDependencies));
+                builder.addFormDataPart("",projectDependencies.getAbsolutePath(),
+                        RequestBody.create(MediaType.parse("application/octet-stream"),
+                                new File(projectDependencies.getAbsolutePath())));
             }
 
             RequestBody body = builder.build();
