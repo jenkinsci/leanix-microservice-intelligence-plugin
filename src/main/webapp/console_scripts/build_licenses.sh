@@ -6,7 +6,7 @@ export gradleInitFile=$3;
 case $packageManager in
   'NPM')
     cd $pathToDependencyDir;
-    npm install license-checker;
+    npm install -g license-checker;
     npm install;
     license-checker --json > $pathToDependencyDir/dependencies.json;
     ;;
