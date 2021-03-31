@@ -2,20 +2,20 @@
 export pathToDependencyDir=$1;
 export packageManager=$2;
 export gradleInitFile=$3;
-dependencyFolder=${pathToDependencyDir%/*};
+
 case $packageManager in
   'NPM')
-    cd $dependencyFolder;
+    cd $pathToDependencyDir;
     npm install license-checker;
     npm install;
-    license-checker --json > $dependencyFolder/dependencies.json;
+    license-checker --json > $pathToDependencyDir/dependencies.json;
     ;;
   'MAVEN')
-    cd $dependencyFolder;
+    cd $pathToDependencyDir;
     mvn org.codehaus.mojo:license-maven-plugin:download-licenses;
     ;;
   'GRADLE')
-    cd $dependencyFolder;
+    cd $pathToDependencyDir;
     gradle generateLicenseReport -I $gradleInitFile;
     ;;
 esac

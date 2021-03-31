@@ -39,8 +39,14 @@ public class DependencyHandler {
                 if (file.exists()) {
                     file.setExecutable(true);
                 } else {
-                    if (copyFileFromWebappToLocal("/console_scripts/" + fileName, "/console_scripts/" + fileName) == null) {
+                    String scriptFileCopiedPath = copyFileFromWebappToLocal("/console_scripts/" + fileName, "/console_scripts/" + fileName);
+                    if (scriptFileCopiedPath == null) {
                         return null;
+                    } else {
+                        File scriptFile = new File(scriptFileCopiedPath);
+                        if (scriptFile.exists()) {
+                            scriptFile.setExecutable(true);
+                        }
                     }
                 }
 
@@ -51,9 +57,15 @@ public class DependencyHandler {
                     if (!new File(gradleInitFileLocalPath).exists()) {
                         copyFileFromWebappToLocal("/console_scripts/" + gradleInitFileName, "/console_scripts/" + gradleInitFileName);
                     }
+                    if(!OS.contains("Windows")){
+                        dmFilePath = dmFilePath + "/";
+                    }
                     processBuilder.command(filePath, dmFilePath, dependencyManager, gradleInitFileLocalPath);
 
                 } else {
+                    if(!OS.contains("Windows")){
+                        dmFilePath = dmFilePath + "/";
+                    }
                     processBuilder.command(filePath, dmFilePath, dependencyManager);
                 }
 
@@ -122,7 +134,7 @@ public class DependencyHandler {
                     return mavenPath;
                 }
             } else if (dependencyManager.equalsIgnoreCase("gradle")) {
-                String gradlePath = searchDependencyFile(scmRootFolderFile, "init.gradle", dependencyManager).getAbsolutePath();
+                String gradlePath = searchDependencyFile(scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
                 if (gradlePath != null) {
                     return gradlePath;
                 }
@@ -148,7 +160,7 @@ public class DependencyHandler {
             }
         } else {
             if (file.getName().equals(fileName)) {
-                return file;
+                return new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
             } else {
                 if (getFileEnding(file.getName()).equals("gradle")) {
                     File gradleFolder = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
@@ -176,8 +188,8 @@ public class DependencyHandler {
             Path dirToCreate = Paths.get(absoluteLocalFilePath).getParent();
             if (dirToCreate != null) {
                 Files.createDirectories(dirToCreate);
-                long result = Files.copy(in, Paths.get(absoluteLocalFilePath), StandardCopyOption.REPLACE_EXISTING);
-                return String.valueOf(result);
+                Files.copy(in, Paths.get(absoluteLocalFilePath), StandardCopyOption.REPLACE_EXISTING);
+                return absoluteLocalFilePath;
             }
         }
         return null;
