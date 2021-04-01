@@ -188,7 +188,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (run.getResult() != null && manifestFileFound) {
 
                         File projectDependencies =
-                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath);
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener);
                         if (projectDependencies == null) {
                             logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
                             listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);

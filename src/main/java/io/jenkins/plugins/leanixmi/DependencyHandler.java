@@ -1,5 +1,6 @@
 package io.jenkins.plugins.leanixmi;
 
+import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 
 import java.io.*;
@@ -14,7 +15,7 @@ public class DependencyHandler {
 
     private final String OS = System.getProperty("os.name");
 
-    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder) {
+    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener) {
 
         String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
         if (!dmFilePath.equals("")) {
@@ -57,13 +58,13 @@ public class DependencyHandler {
                     if (!new File(gradleInitFileLocalPath).exists()) {
                         copyFileFromWebappToLocal("/console_scripts/" + gradleInitFileName, "/console_scripts/" + gradleInitFileName);
                     }
-                    if(!OS.contains("Windows")){
+                    if (!OS.contains("Windows")) {
                         dmFilePath = dmFilePath + "/";
                     }
                     processBuilder.command(filePath, dmFilePath, dependencyManager, gradleInitFileLocalPath);
 
                 } else {
-                    if(!OS.contains("Windows")){
+                    if (!OS.contains("Windows")) {
                         dmFilePath = dmFilePath + "/";
                     }
                     processBuilder.command(filePath, dmFilePath, dependencyManager);
@@ -108,6 +109,9 @@ public class DependencyHandler {
                     System.out.println("ERROR in building the dependencies!");
                 }
                 System.out.println(output);
+            } catch (NullPointerException e) {
+                System.out.println(e.getMessage());
+                listener.getLogger().println(e.getMessage());
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -125,7 +129,7 @@ public class DependencyHandler {
 
         try {
             if (dependencyManager.equalsIgnoreCase("npm")) {
-                String npmPath = searchDependencyFile(scmRootFolder , scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
+                String npmPath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
                 if (npmPath != null) {
                     return npmPath;
                 }
@@ -195,6 +199,6 @@ public class DependencyHandler {
                 return absoluteLocalFilePath;
             }
         }
-        return null;
+        throw new NullPointerException("Jenkins Root URL is empty, files in webapp can not be accessed. File: " + relativeWebAppPath);
     }
 }
