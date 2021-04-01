@@ -15,7 +15,7 @@ In order to be able to use the LeanIX Microservice Intelligence Plugin, the foll
 
 * The LeanIX Microservice Intelligence plugin must be installed: https://www.jenkins.io/doc/book/managing/plugins/
 * You have a valid **LeanIX API token**.
-* If you are **using scripted pipelines** in which the LeanIX plugin is to be integrated as a step, the "Credentials Binding" plugin must be installed: https://plugins.jenkins.io/credentials-binding/  
+* If you are **using scripted pipelines** in which the LeanIX plugin is to be integrated as a step, the "Credentials Binding" plugin must be installed: https://plugins.jenkins.io/credentials-binding/. It is assumed user already installed pipeline plugin.  
   For projects such as a **Freestyle project**, in which the plugin can be added via UI as a build step, the plugin for injecting environment variables might be required instead: https://plugins.jenkins.io/envinject/
 * An **SCM provider** (e.g. Git) must be configured for the pipeline to be used and the possibly necessary plug-in installed.
 * The **manifest file** made available by LeanIX and filled with the appropriate values is located in the corresponding repository, so that it can be accessed by the plugin. The contents is sent by the plugin to the LeanIX interface.
@@ -29,13 +29,24 @@ In order to be able to use the LeanIX Microservice Intelligence Plugin, the foll
 <br>
 The configuration of the LeanIX Microservice Plugin is divided into three parts:
 
+* [Setting up Resource Root URL in System Configuration](#set-up-Resource-Root-URL-in-system-configuration)
 * [Setting up secrets in the Jenkins administration](#setting-up-secrets-in-the-manage-jenkins-area),
 * [Central configuration of the plugin](#central-configuration-of-the-plugin),
 * [Configuration of individual pipelines and jobs in which the plugin is to be used.](#individual-configuration-of-pipelines-and-jobs)
 
 <br>
 
-### Setting up secrets in the Manage Jenkins area.
+### Setting up Resource Root URL in System Configuration
+
+<br>
+
+LeanIX plugin will use Resouce Root URL to access files stored in webapp server. Please go to Dashboard -> Manage Jenkins ->Configure System, in this page go to item "Serve resource files from another domain", make sure "Resource Root URL" is not empty. If it is empty, you can copy the url from "Jenkins URL" above it, save the configuration at the bottom of the page.
+
+![Example for Resource Root URL](images/rooturl.png)
+
+<br>
+
+### Setting up secrets in the Manage Jenkins area
 
 <br>
 This section is only important if you want to use the LeanIX plugin in scripted pipelines. For this purpose, a new credentials record with the following parameters is created in Jenkins in the "Manage Jenkins" -> "Security" -> "Manage Credentials" area (a detailed description of how to create credentials can be found at the following link: https:www.jenkins.io/doc/book/using/using-credentials/):
@@ -43,7 +54,7 @@ This section is only important if you want to use the LeanIX plugin in scripted 
 * **Username**: The host and thus the part of a URL that specifies the region of the LeanIX service in which the workspace is located, to which the data extracted by the plugin is to be sent.
 * **Password**: A valid API token for the LeanIX workspace that matches the host.
 * **ID**: "LEANIX_CREDENTIALS" is suggested here, but any valid variable name can be selected. It just needs to be used accordingly in the pipeline.
-* **Desciption**: No value is needed here.
+* **Desciption**: It is suggested to add a description here, so user can differentiate the credentials when using credentials binding plugin.
 
 ![Example for credentials](images/credentials.png)
 
@@ -68,8 +79,8 @@ In the uppermost area with the title **"Pipeline Configuration in JSON format"**
 The structure of these configurations is as follows:
 
 * **"leanIXConfigurations"** contains all configurations, root of the file
-*   **"deploymentStageVarName"**: If you use environment variables for the configuration of the stage that your Jenkins job belongs to (e.g. test, production) you can use this field to give the name of the variable and the LeanIX plugin will read out this variable for the information on the stage. The stage can also be set in the local configurations of the jobs. 
-*  **"deploymentVersionVarName"**: If you use environment variables for the configuration of the version of the build that your Jenkins job is running, you can use this field to give the name of the variable and the LeanIX plugin will read out this variable for the information on the version. It is mandatory to give a version, but it can also be given in the local configuration of the jobs.
+*   **"deploymentStageVarName"**: If you use environment variables for the configuration of the stage that your Jenkins job belongs to (e.g. test, production) you can use this field to give the name of the variable and the LeanIX plugin will read out this variable for the information on the stage. The stage value can also be set in the local configurations of the jobs. 
+*  **"deploymentVersionVarName"**: If you use environment variables for the configuration of the version of the build that your Jenkins job is running, you can use this field to give the name of the variable and the LeanIX plugin will read out this variable for the information on the version. It is mandatory to give a version, the value can also be given in the local configuration of the jobs.
 *  **"settings"**: In this array settings for several pipelines can be bundled.
 *  - **"pipelines"**: This array is filled with the names of the pipelines/jobs, for which the following settings should apply
 *  - **"path"**: The path to the LeanIX-manifest-YAML-file in your SCM (Git, SVN etc.) for the pipelines or jobs defined under "pipelines"
@@ -137,7 +148,7 @@ In the input mask with the title "LeanIX Microservice Intelligence" that then ap
 * **LeanIX-Manifest-Path -readonly-** : This field is readonly, it will be filled automatically after the first run of the plugin. This is the path to the manifest file that is specified in the central configuration. If it is not specified, the default will be "/lx-manifest.yml".
 * **Hostname**: Enter the host name for the appropriate LeanIX region in which your workspace is located.
 * **Apitoken**: Enter the API token that matches the host name or your workspace in this protected field.
-* **Result in case of failure**: Indicate what influence a failure of the LeanIX plugin should have on EXACTLY THIS JOB. If you do not make a selection, the selection of the central configuration is used. If you make a selection, the entry for the central configuration for this job will be overwritten.
+* **Result in case of failure**: Indicate what influence a failure of the LeanIX plugin should have on EXACTLY THIS JOB. If you do not make a selection, the selection of the central configuration is used. If you make a selection, the entry for the central configuration for this job will be overwritten. Before the next restart of Jenkins, the central configuration result setting will not be used again.
 * **Dependency manager of the SCM**: Select which DependencyManager you use for your project. This information is important so that the correct dependencies can be generated from your SCM and integrated into the appropriate factsheet. The LeanIX plugin currently supports NPM, MAVEN and GRADLE.
 * **Use this LeanIX Build Step**: This checkbox indicates whether the LeanIX Build step should be executed or skipped. You can use this to switch it on and off as per job.
 
