@@ -14,9 +14,9 @@ public class DependencyHandler {
 
     private final String OS = System.getProperty("os.name");
 
-    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile) {
+    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder) {
 
-        String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile);
+        String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
         if (!dmFilePath.equals("")) {
 
 
@@ -119,22 +119,22 @@ public class DependencyHandler {
         }
     }
 
-    private String getDependencyManagerFilePath(String dependencyManager, File scmRootFolderFile) {
+    private String getDependencyManagerFilePath(String dependencyManager, File scmRootFolderFile, String scmRootFolder) {
 
 
         try {
             if (dependencyManager.equalsIgnoreCase("npm")) {
-                String npmPath = searchDependencyFile(scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
+                String npmPath = searchDependencyFile(scmRootFolder , scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
                 if (npmPath != null) {
                     return npmPath;
                 }
             } else if (dependencyManager.equalsIgnoreCase("maven")) {
-                String mavenPath = searchDependencyFile(scmRootFolderFile, "pom.xml", dependencyManager).getAbsolutePath();
+                String mavenPath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "pom.xml", dependencyManager).getAbsolutePath();
                 if (mavenPath != null) {
                     return mavenPath;
                 }
             } else if (dependencyManager.equalsIgnoreCase("gradle")) {
-                String gradlePath = searchDependencyFile(scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
+                String gradlePath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
                 if (gradlePath != null) {
                     return gradlePath;
                 }
@@ -145,16 +145,18 @@ public class DependencyHandler {
         return "";
     }
 
-    private File searchDependencyFile(File file, String fileName, String dependencyManager) {
+    private File searchDependencyFile(String scmRootFolder, File file, String fileName, String dependencyManager) {
         if (file.isDirectory()) {
             File[] arr = file.listFiles();
             if (arr != null) {
                 for (File f : arr) {
+                    boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
                     //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
-                    if (!dependencyManager.equalsIgnoreCase("npm") || !f.getPath().contains("node_modules")) {
-                        File found = searchDependencyFile(f, fileName, dependencyManager);
-                        if (found != null)
+                    if (!dependencyManager.equalsIgnoreCase("npm") || (!f.getPath().contains("node_modules") && !check)) {
+                        File found = searchDependencyFile(scmRootFolder, f, fileName, dependencyManager);
+                        if (found != null) {
                             return found;
+                        }
                     }
                 }
             }
