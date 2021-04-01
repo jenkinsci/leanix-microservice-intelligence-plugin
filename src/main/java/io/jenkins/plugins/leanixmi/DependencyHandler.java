@@ -72,7 +72,7 @@ public class DependencyHandler {
                 // processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                 processBuilder.redirectErrorStream(true);
 
-                System.out.println("Starting to build the dependencies file...");
+                System.out.println("LeanIX Microservice Intelligence: Starting to build the dependencies file...");
                 Process process = processBuilder.start();
 
                 StringBuilder output = new StringBuilder();
@@ -87,7 +87,7 @@ public class DependencyHandler {
                 reader.close();
                 int exitVal = process.waitFor();
                 if (exitVal == 0) {
-                    System.out.println("Success in building the dependencies!");
+                    System.out.println("LeanIX Microservice Intelligence: Success in building the dependencies file!");
                     if (dependencyManager.equalsIgnoreCase("npm")) {
                         File depFile = new File(dmFilePath + "/dependencies.json");
                         if (depFile.exists()) {
@@ -105,7 +105,7 @@ public class DependencyHandler {
                         }
                     }
                 } else {
-                    System.out.println("ERROR in building the dependencies!");
+                    System.out.println("LeanIX Microservice Intelligence: ERROR in building the dependencies file!");
                 }
                 System.out.println(output);
             } catch (IOException e) {
