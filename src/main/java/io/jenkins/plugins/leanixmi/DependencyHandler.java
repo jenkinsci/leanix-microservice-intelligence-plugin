@@ -41,13 +41,10 @@ public class DependencyHandler {
                     file.setExecutable(true);
                 } else {
                     String scriptFileCopiedPath = copyFileFromWebappToLocal("/console_scripts/" + fileName, "/console_scripts/" + fileName);
-                    if (scriptFileCopiedPath == null) {
-                        return null;
-                    } else {
-                        File scriptFile = new File(scriptFileCopiedPath);
-                        if (scriptFile.exists()) {
-                            scriptFile.setExecutable(true);
-                        }
+                    File scriptFile = new File(scriptFileCopiedPath);
+                    if (scriptFile.exists()) {
+                        scriptFile.setExecutable(true);
+
                     }
                 }
 
