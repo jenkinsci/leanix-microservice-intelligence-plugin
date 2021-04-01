@@ -1,6 +1,6 @@
 package io.jenkins.plugins.leanixmi;
 
-import com.squareup.okhttp.*;
+
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Job;
@@ -11,7 +11,6 @@ import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import jenkins.model.Jenkins;
 import jenkins.triggers.SCMTriggerItem;
-import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -33,7 +32,7 @@ public class ManifestFileHandler {
         jobresultchoice = jrs;
     }
 
-    public boolean retrieveManifestJSONFromSCM(String manifestPath, Job job, Run run, Launcher launcher, TaskListener listener, LeanIXLogAction logAction) {
+    public boolean retrieveManifestJSONFromSCM(String manifestPath, Job job, Run run, Launcher launcher, TaskListener listener, LeanIXLogAction logAction, File folderPathFile) {
 
 
         // dealing with the SCM (see ManifestFile - Class)
@@ -44,7 +43,6 @@ public class ManifestFileHandler {
         Jenkins jenkins = Jenkins.get();
         File changelog = new File(jenkins.getRootDir() + "/leanix/changelog");
         SCMRevisionState scmRS = null;
-        File folderPathFile = new File(jenkins.getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout");
         FilePath filePath = new FilePath(folderPathFile);
         if (s != null) {
             ArrayList<SCM> scms = new ArrayList<>(s.getSCMs());
@@ -77,56 +75,6 @@ public class ManifestFileHandler {
         return false;
     }
 
-    public int sendFileToConnector(String hostname, String jwtToken, String deploymentVersion, String deploymentStage) throws IOException {
-
-        String boundary = Long.toString(System.currentTimeMillis());
-
-        JSONObject dataObj = new JSONObject();
-        dataObj.put("version", deploymentVersion);
-        dataObj.put("stage", deploymentStage);
-
-        ResponseBody responseBody = null;
-        try {
-
-            OkHttpClient client = new OkHttpClient();
-            HttpUrl httpUrl = new HttpUrl.Builder()
-                    .scheme("https")
-                    .host(hostname)
-                    .addPathSegment("services")
-                    .addPathSegment("cicd-connector")
-                    .addPathSegment("v2")
-                    .addPathSegment("deployment")
-                    .build();
-
-
-            MediaType mediaType = MediaType.parse("multipart/form-data; boundary=----WebKitFormBoundary" + boundary);
-            RequestBody body = RequestBody.create(mediaType, "------WebKitFormBoundary" + boundary +
-                    "\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n" + manifestJSON + "\r\n"
-                    + "------WebKitFormBoundary" + boundary + "\r\nContent-Disposition: form-data; " +
-                    "name=\"data\"\r\nContent-Type: application/json\r\n\r\n" + dataObj + "\r\n------WebKitFormBoundary"
-                    + boundary + "--");
-            Request request = new Request.Builder()
-                    .url(httpUrl)
-                    .post(body)
-                    .addHeader("content-type", "multipart/form-data; boundary=----WebKitFormBoundary" + boundary)
-                    .addHeader("accept", "*/*")
-                    .addHeader("Content-Type", "multipart/form-data")
-                    .addHeader("Authorization", "Bearer " + jwtToken)
-                    .addHeader("cache-control", "no-cache")
-                    .build();
-
-            Response response = client.newCall(request).execute();
-            responseBody = response.body();
-            return response.code();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        } finally {
-            if (responseBody != null)
-                responseBody.close();
-        }
-
-    }
 
     private String getManifestFileFromFolder(File folderPath, String manifestPath, Run run, LeanIXLogAction logAction) throws IOException, ParseException {
         String fullPath = folderPath.getAbsolutePath() + manifestPath;

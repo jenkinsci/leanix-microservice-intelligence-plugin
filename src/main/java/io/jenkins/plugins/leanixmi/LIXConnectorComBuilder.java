@@ -1,5 +1,6 @@
 package io.jenkins.plugins.leanixmi;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -9,6 +10,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.json.simple.JSONArray;
@@ -25,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
@@ -33,13 +36,13 @@ import java.util.stream.Collectors;
 public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, Serializable {
 
     private String lxmanifestpath;
+    private String dependencymanager = "";
     private boolean useleanixconnector;
     private String hostname = "";
     private Secret apitoken;
     private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
-    private static final String defaultVersion = "Default version number used is BUILD_ID ";
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
@@ -62,6 +65,18 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     public String getLxmanifestpath() {
         return lxmanifestpath;
+    }
+
+
+    public String getDependencymanager() {
+        return dependencymanager;
+    }
+
+    @DataBoundSetter
+    public void setDependencymanager(String dependencymanager) {
+        if (Arrays.asList(DescriptorImpl.DEPENDENCYMANAGERCHOICES).contains(dependencymanager)) {
+            this.dependencymanager = dependencymanager;
+        }
     }
 
     @DataBoundSetter
@@ -111,7 +126,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     }
 
     @Override
-    public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+    public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
+
 
         if (getUseleanixconnector()) {
 
@@ -121,25 +137,31 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
             boolean configFound;
             LeanIXLogAction logAction = new LeanIXLogAction("Something went wrong. Please review your LeanIX-Configuration!");
-
+            logAction.setDependencymanager(dependencymanager);
 
             Job job = run.getParent();
             configFound = findJSONPipelineConfig(job);
             if (!configFound) {
-                logAction.setLxManifestPath(LeanIXLogAction.MANIFEST_NOTFOUND);
-                logAction.setResult(LeanIXLogAction.MANIFEST_NOTFOUND);
-                listener.getLogger().println(LeanIXLogAction.MANIFEST_NOTFOUND);
-                setLxmanifestpath(LeanIXLogAction.MANIFEST_NOTFOUND);
-                run.setResult(LIXConnectorComBuilder.DescriptorImpl.getJobresultchoicecentral());
+                logAction.setResult(LeanIXLogAction.CONFIGFILENOTFOUND);
+                listener.getLogger().println(LeanIXLogAction.CONFIGFILENOTFOUND);
+                run.setResult(Result.fromString(getJobresultchoice()));
             } else {
                 listener.getLogger().println("Your manifest path is " + lxmanifestpath + "!");
                 logAction.setLxManifestPath(lxmanifestpath);
-                ManifestFileHandler manifestFileHandler = new ManifestFileHandler(jobresultchoice);
-                boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction);
 
 
-                String stage = env.get(deploymentstage);
-                String version = env.get(deploymentversion);
+                // Dealing with stage and version here
+                // Setting default values "stage" and "version"
+                String stage = "stage";
+                String version = "version";
+                // env.get can lead to a NullPointerException in case that the variable is not existing
+                try {
+                    stage = env.get(deploymentstage);
+                    version = env.get(deploymentversion);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 if (stage != null && !stage.equals("")) {
                     listener.getLogger().println("Your deployment stage is " + stage + ".");
                     logAction.setStage(stage);
@@ -148,38 +170,63 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     listener.getLogger().println(LeanIXLogAction.STAGE_NOTSET);
                     setDeploymentstage(LeanIXLogAction.STAGE_NOTSET);
                 }
+
+                // Version is mandatory, don't go on without it!
                 if (version != null && !version.equals("")) {
                     listener.getLogger().println("Your deployment version is " + version + ".");
                     logAction.setVersion(version);
-                } else {
-                    version = env.get("BUILD_ID");
-                    logAction.setStage(LeanIXLogAction.VERSION_NOTSET);
-                    listener.getLogger().println(LeanIXLogAction.VERSION_NOTSET);
-                    setDeploymentstage(LeanIXLogAction.VERSION_NOTSET);
-                    listener.getLogger().println(defaultVersion + version + ".");
-                    logAction.setVersion(version);
-                }
 
 
-                // If SCM was checked out correctly
-                if (run.getResult() != null && manifestFileFound) {
-                    String host = this.getHostname();
-                    String apiToken;
-                    if(env.get("token") != null){
-                        apiToken = env.get("token");
-                    }else{
-                        apiToken = this.getApitoken().getPlainText();
-                    }
-                    String jwtToken = getJWTToken(host, apiToken);
-                    if (jwtToken != null && !jwtToken.isEmpty()) {
-                        int responseCode = manifestFileHandler.sendFileToConnector(host, jwtToken, version, stage);
-                        if (responseCode < 200 || responseCode > 308) {
-                            logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
+                    ManifestFileHandler manifestFileHandler = new ManifestFileHandler(jobresultchoice);
+                    String folderPath = Jenkins.get().getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout";
+                    File folderPathFile = new File(folderPath);
+                    boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction, folderPathFile);
+                    DependencyHandler dependencyHandler = new DependencyHandler();
+
+
+                    // If SCM was checked out correctly
+                    if (run.getResult() != null && manifestFileFound) {
+
+                        File projectDependencies =
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener);
+                        if (projectDependencies == null) {
+                            logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
+                            listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
+                            run.setResult(Result.fromString(getJobresultchoice()));
                         }
+
+                        String host = this.getHostname();
+                        String apiToken;
+                        if (env.get("token") != null) {
+                            apiToken = env.get("token");
+                        } else {
+                            apiToken = this.getApitoken().getPlainText();
+                        }
+                        String jwtToken = getJWTToken(host, apiToken);
+                        if (jwtToken != null && !jwtToken.isEmpty()) {
+                            ConnectorHandler conHandler = new ConnectorHandler();
+                            int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
+                            if (responseCode < 200 || responseCode > 308) {
+                                logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
+                                run.setResult(Result.fromString(getJobresultchoice()));
+                            }
+                        } else {
+                            run.setResult(Result.fromString(getJobresultchoice()));
+                            logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+                        }
+
                     } else {
-                        run.setResult(Result.fromString(getJobresultchoice()));
-                        logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+                        logAction.setLxManifestPath(LeanIXLogAction.MANIFEST_NOTFOUND);
+                        logAction.setResult(LeanIXLogAction.MANIFEST_NOTFOUND);
+                        listener.getLogger().println(LeanIXLogAction.MANIFEST_NOTFOUND);
+                        setLxmanifestpath(LeanIXLogAction.MANIFEST_NOTFOUND);
                     }
+                } else {
+                    logAction.setVersion(LeanIXLogAction.VERSION_NOTSET);
+                    listener.getLogger().println(LeanIXLogAction.VERSION_NOTSET);
+                    logAction.setResult("Could not finish successfully: " + LeanIXLogAction.VERSION_NOTSET);
+                    setDeploymentversion(LeanIXLogAction.VERSION_NOTSET);
+                    run.setResult(Result.fromString(getJobresultchoice()));
                 }
             }
             run.addAction(logAction);
@@ -202,6 +249,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (pipelines.contains(job.getName())) {
                         configFound = true;
                         setLxmanifestpath(pipeConfJson.get("path").toString());
+                        setDependencymanager((pipeConfJson.get("dependency-manager") != null) ? pipeConfJson.get("dependency-manager").toString() : "");
                     }
                 }
             }
@@ -257,6 +305,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
         public static final String defaultLXManifestPath = "/lx-manifest.yml";
         public static final boolean defaultUseLeanIXConnector = true;
+        private static final String[] DEPENDENCYMANAGERCHOICES = {"NPM", "GRADLE", "MAVEN"};
         private static Result jobresultchoicecentral = Result.SUCCESS;
 
 
@@ -272,6 +321,23 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 throws IOException, ServletException {
             if (!value.equals("") && !value.equals("FAILURE") && Result.fromString(value).equals(Result.FAILURE)) {
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_severityLevelWrong());
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckHostname(@QueryParameter String value)
+                throws IOException, ServletException {
+            if (value.length() == 0)
+                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingHost());
+            if (value.length() < 3)
+                return FormValidation.warning(Messages.LIXConnectorComBuilder_DescriptorImpl_warnings_hostTooShort());
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckDependencymanager(@QueryParameter String value)
+                throws IOException, ServletException {
+            if (!value.equals("") && Arrays.stream(DEPENDENCYMANAGERCHOICES).noneMatch(value::equals)) {
+                return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_dependencyManagerChoiceWrong());
             }
             return FormValidation.ok();
         }
@@ -293,6 +359,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return true;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.LIXConnectorComBuilder_DescriptorImpl_DisplayLXManifestPath();

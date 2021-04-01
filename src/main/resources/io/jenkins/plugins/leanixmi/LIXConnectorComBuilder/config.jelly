@@ -1,10 +1,11 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="${%LeanIX-Manifest-Path (readonly)}" field="lxmanifestpath">
+    <div style="margin-top: 40px; margin-bottom: 40px">
+    <f:entry title="${%LeanIX-Manifest-Path -readonly-}" field="lxmanifestpath">
         <f:readOnlyTextbox default="Please specify this path in the plugin configuration."/>
     </f:entry>
-    <f:entry title="${%Hostname}" field="hostname">
+    <f:entry title="${%Hostname}" field="hostname" description="${%LeanIXHostNameDescr}">
         <f:textbox/>
     </f:entry>
     <f:entry title="${%Apitoken}" field="apitoken"
@@ -34,10 +35,28 @@
             </option>
         </select>
     </f:entry>
+
+    <f:entry title="${%Dependency manager of the SCM}" field="dependencymanager">
+        <select name="dependencymanager">
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('')? 'true':null}" value="">
+                --
+            </option>
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('npm')? 'true':null}" value="NPM">
+                npm
+            </option>
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('maven')? 'true':null}" value="MAVEN">
+                maven
+            </option>
+            <option selected="${instance.dependencymanager.equalsIgnoreCase('gradle')? 'true':null}" value="GRADLE">
+                gradle
+            </option>
+        </select>
+    </f:entry>
     <!--    <f:advanced>-->
     <f:entry title="${%Use this LeanIX-Build-Step}" field="useleanixconnector"
              description="${%LeanIXConnectorDescr}">
         <f:checkbox default="${descriptor.defaultUseLeanIXConnector}"/>
     </f:entry>
     <!--    </f:advanced>-->
+    </div>
 </j:jelly>

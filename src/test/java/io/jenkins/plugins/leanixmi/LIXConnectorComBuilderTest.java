@@ -18,6 +18,7 @@ public class LIXConnectorComBuilderTest {
 
     final String pathNotFound = "The manifest file could not be found in your Source Code Management System, please check that the path you specified is correct.";
     final String lxManifestPath = "Please specify this path in the plugin configuration.";
+    final String configFileNotFound = "The configuration file for the LeanIX Plugin could not be found.";
 
     @Test
     public void testConfigRoundtrip() throws Exception {
@@ -53,7 +54,7 @@ public class LIXConnectorComBuilderTest {
         builder.setUseleanixconnector(true);
         project.getBuildersList().add(builder);
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-        jenkins.assertLogContains(pathNotFound, build);
+        jenkins.assertLogContains(configFileNotFound, build);
     }
 
     @Test
@@ -67,7 +68,7 @@ public class LIXConnectorComBuilderTest {
                 + "}";
         job.setDefinition(new CpsFlowDefinition(pipelineScript, true));
         WorkflowRun completedBuild = jenkins.assertBuildStatusSuccess(job.scheduleBuild2(0));
-        jenkins.assertLogContains(pathNotFound, completedBuild);
+        jenkins.assertLogContains(configFileNotFound, completedBuild);
     }
 
 }

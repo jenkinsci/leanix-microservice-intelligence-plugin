@@ -83,8 +83,6 @@ public class JsonPipelineConfiguration {
             File fileCheck = new File(customFilePath);
             if (fileCheck.createNewFile()) {
                 System.out.println("File created: " + fileCheck.getName());
-            } else {
-                System.out.println("File already exists.");
             }
         } catch (IOException e) {
             System.out.println("An error occurred.");

@@ -11,14 +11,17 @@ public class LeanIXLogAction implements RunAction2 {
     private String result;
     private String stage;
     private String version;
+    private String dependencymanager;
     public static final String TOKEN_FAILED = "Could not send the LeanIX-data, because the Authentication failed. Please check your Hostname and API-Token.";
+    public static final String CONFIGFILENOTFOUND = "The configuration file for the LeanIX Plugin could not be found.";
     public static final String SCM_FAILED = "Could not send the LeanIX-data, because the SCM could not be accessed correctly.";
     public static final String MANIFEST_WRONG = "The manifest file could not be parsed, please check that it is correct.";
     public static final String MANIFEST_NOTFOUND = "The manifest file could not be found in your Source Code Management System, please check that the path you specified is correct.";
-    public static final String API_CALL_FAILED = "Could not send the LeanIX-data. The SPI responded with an error. Please check your host name and the manifest.yml file in your version management tool.";
-    public static final String SUCCESS =  "Success: The LeanIX-data was transmitted successfully.";
+    public static final String API_CALL_FAILED = "Could not send the LeanIX-data. The API responded with an error. Please check your host name and the manifest.yml file in your version management tool.";
+    public static final String SUCCESS = "Success: The LeanIX-data was transmitted successfully.";
     public static final String STAGE_NOTSET = "Deployment stage variable value is not set in jenkins environment.";
-    public static final String VERSION_NOTSET = "Deployment version variable value is not set in jenkins environment.";
+    public static final String VERSION_NOTSET = "Deployment version variable or deployment version value is not set in jenkins environment.";
+    public static final String DEPENDENCIES_NOT_GENERATED = "The dependencies of your project couldn't be generated.";
 
 
     @Override
@@ -84,5 +87,13 @@ public class LeanIXLogAction implements RunAction2 {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getDependencymanager() {
+        return dependencymanager;
+    }
+
+    public void setDependencymanager(String dependencymanager) {
+        this.dependencymanager = dependencymanager;
     }
 }
