@@ -151,7 +151,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
 
                 // Dealing with stage and version here
-                // Setting defaul values "stage" and "version"
+                // Setting default values "stage" and "version"
                 String stage = "stage";
                 String version = "version";
                 // env.get can lead to a NullPointerException in case that the variable is not existing

@@ -72,6 +72,7 @@ public class DependencyHandler {
                 // processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                 processBuilder.redirectErrorStream(true);
 
+                System.out.println("Starting to build the dependencies file...");
                 Process process = processBuilder.start();
 
                 StringBuilder output = new StringBuilder();
@@ -86,7 +87,7 @@ public class DependencyHandler {
                 reader.close();
                 int exitVal = process.waitFor();
                 if (exitVal == 0) {
-                    System.out.println("Success!");
+                    System.out.println("Success in building the dependencies!");
                     if (dependencyManager.equalsIgnoreCase("npm")) {
                         File depFile = new File(dmFilePath + "/dependencies.json");
                         if (depFile.exists()) {
@@ -104,7 +105,7 @@ public class DependencyHandler {
                         }
                     }
                 } else {
-                    System.out.println("ERROR!");
+                    System.out.println("ERROR in building the dependencies!");
                 }
                 System.out.println(output);
             } catch (IOException e) {
