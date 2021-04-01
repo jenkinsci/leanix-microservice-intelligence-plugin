@@ -178,7 +178,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
 
                     ManifestFileHandler manifestFileHandler = new ManifestFileHandler(jobresultchoice);
-                    File folderPathFile = new File(Jenkins.get().getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout");
+                    String folderPath = Jenkins.get().getRootDir() + "/leanix/git/" + job.getDisplayName() + "/checkout";
+                    File folderPathFile = new File(folderPath);
                     boolean manifestFileFound = manifestFileHandler.retrieveManifestJSONFromSCM(lxmanifestpath, job, run, launcher, listener, logAction, folderPathFile);
                     DependencyHandler dependencyHandler = new DependencyHandler();
 
@@ -187,7 +188,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (run.getResult() != null && manifestFileFound) {
 
                         File projectDependencies =
-                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile);
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath);
                         if (projectDependencies == null) {
                             logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
                             listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
