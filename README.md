@@ -39,7 +39,6 @@ The configuration of the LeanIX Microservice Plugin is divided into three parts:
 ### Setting up Resource Root URL in System Configuration
 
 <br>
-
 LeanIX plugin will use Resouce Root URL to access files stored in webapp server. Please go to Dashboard -> Manage Jenkins ->Configure System, in this page go to item "Serve resource files from another domain", make sure "Resource Root URL" is not empty. If it is empty, you can copy the url from "Jenkins URL" above it, save the configuration at the bottom of the page.
 
 ![Example for Resource Root URL](images/rooturl.png)
@@ -50,6 +49,7 @@ LeanIX plugin will use Resouce Root URL to access files stored in webapp server.
 
 <br>
 This section is only important if you want to use the LeanIX plugin in scripted pipelines. For this purpose, a new credentials record with the following parameters is created in Jenkins in the "Manage Jenkins" -> "Security" -> "Manage Credentials" area (a detailed description of how to create credentials can be found at the following link: https:www.jenkins.io/doc/book/using/using-credentials/):
+
 * **Scope**: It is best to select "global", unless security reasons or company guidelines speak against it.
 * **Username**: The host and thus the part of a URL that specifies the region of the LeanIX service in which the workspace is located, to which the data extracted by the plugin is to be sent.
 * **Password**: A valid API token for the LeanIX workspace that matches the host.
@@ -75,6 +75,7 @@ When you call this up, you will find two areas in which settings can be made.
 ##### 1.
 
 <br>
+
 In the uppermost area with the title **"Pipeline Configuration in JSON format"** there is an input field in which configurations in JSON format can be inserted.
 The structure of these configurations is as follows:
 
@@ -86,7 +87,7 @@ The structure of these configurations is as follows:
 *  - **"path"**: The path to the LeanIX-manifest-YAML-file in your SCM (Git, SVN etc.) for the pipelines or jobs defined under "pipelines"
 
 **For Frestyle projects is mandatory to give a path to manifest-file here!**
-     
+
 This is an example of a configuration:
 
     {
@@ -134,7 +135,7 @@ To configure a freestyle project, the stage and version of the job must be defin
 If you have a way to configure this, the name of the variables you use can be set via the central configuration of the plugin, see above.
 Otherwise the plugin "Environment Injector" (https://plugins.jenkins.io/envinject/) available for Jenkins can be used. There stage and version must be defined in such a way that the names used match those used in the central configuration. In the following example in the central configuration "deploymentStageVarName" was
  defined with "stage" and "deploymentVersionVarName" with "version":
- 
+
 ![Example for environment variables](images/env_variables.png)
 
 In addition, an SCM provider (e.g. Git) must be set up correctly for the project and the LeanIX manifest file must be located there under the path that is specified in the central configuration for this job.
@@ -174,7 +175,7 @@ Before adding the LeanIX build step to the pipeline, add a secured credentials e
 * credentialsID: Use the ID that you used in Jenkins, as described under [Setting up secrets in the Jenkins administration](#setting-up-secrets-in-the-manage-jenkins-area).
 
 The step in which the LeanIX plug-in is executed must be within the scope of "withCredentials" so that it can securely access the LeanIX API token and the other information.
-To configure the LeanIX plugin step you can use the ["pipeline Syntax" generator](https://www.jenkins.io/doc/book/pipeline/getting-started/#snippet-generator) of Jenkins. 
+To configure the LeanIX plugin step you can use the ["pipeline Syntax" generator](https://www.jenkins.io/doc/book/pipeline/getting-started/#snippet-generator) of Jenkins.
 A pipeline step with a built-in LeanIX plugin looks like this:
 
         steps {
@@ -189,6 +190,7 @@ A pipeline step with a built-in LeanIX plugin looks like this:
 
 <br>
 <br>
+
 When the configuration of the project or pipeline is complete, the start of a build (Build now) will include the execution of the LeanIX plug-in. After execution and if the LeanIX plug-in step has been reached, there is a menu item called **"LeanIX Microservice Intelligence Log"** in the monitoring area of each build (click on the build number in the Pipeline or Project area). In this area you will find the information which values were used for the build by the LeanIX plugin as well as information on the result of the step in the **"Status"** section. Possible errors will be mentioned here.
 
 ![LeanIX-Log.](images/leanix_log.png)
