@@ -39,7 +39,6 @@ The configuration of the LeanIX Microservice Plugin is divided into three parts:
 ### Setting up Resource Root URL in System Configuration
 
 <br>
-
 LeanIX plugin will use Resouce Root URL to access files stored in webapp server. Please go to Dashboard -> Manage Jenkins ->Configure System, in this page go to item "Serve resource files from another domain", make sure "Resource Root URL" is not empty. If it is empty, you can copy the url from "Jenkins URL" above it, save the configuration at the bottom of the page.
 
 ![Example for Resource Root URL](images/rooturl.png)
