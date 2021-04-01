@@ -19,7 +19,8 @@ In order to be able to use the LeanIX Microservice Intelligence Plugin, the foll
   For projects such as a **Freestyle project**, in which the plugin can be added via UI as a build step, the plugin for injecting environment variables might be required instead: https://plugins.jenkins.io/envinject/
 * An **SCM provider** (e.g. Git) must be configured for the pipeline to be used and the possibly necessary plug-in installed.
 * The **manifest file** made available by LeanIX and filled with the appropriate values is located in the corresponding repository, so that it can be accessed by the plugin. The contents is sent by the plugin to the LeanIX interface.
-  
+* If you manage npm projects in Jenkins, please install the npm license-checker ( https://www.npmjs.com/package/license-checker ). The plug-in will also initiate the installation, but this may fail for reasons of access rights.
+
 <br>
 
 ## Configuration
