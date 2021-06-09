@@ -13,7 +13,13 @@ import java.nio.file.StandardCopyOption;
 
 public class DependencyHandler {
 
+
+    private static final String NO_PERMISSION_TO_EXECUTE = "You have no permissions to execute a script file. Please contact your administrator!";
+    private static final String WINDOWS = "Windows";
+    private static final String GRADLE = "gradle";
     private final String OS = System.getProperty("os.name");
+
+
 
     public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener) {
 
@@ -23,11 +29,9 @@ public class DependencyHandler {
 
             ProcessBuilder processBuilder = new ProcessBuilder();
 
-            // TODO: the console-script could be moved to a String variable in a different class or sth., then the path stuff will not be needed any longer
-
             String filePath = "";
             String fileName = "";
-            if (OS.contains("Windows")) {
+            if (OS.contains(WINDOWS)) {
                 fileName = "build_licenses.bat";
             } else {
                 fileName = "build_licenses.sh";
@@ -38,36 +42,40 @@ public class DependencyHandler {
 
                 File file = new File(filePath);
                 if (file.exists()) {
-                    file.setExecutable(true);
+                    if (!file.setExecutable(true)) {
+                        throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
+                    }
                 } else {
                     String scriptFileCopiedPath = copyFileFromWebappToLocal("/console_scripts/" + fileName, "/console_scripts/" + fileName);
                     File scriptFile = new File(scriptFileCopiedPath);
                     if (scriptFile.exists()) {
-                        scriptFile.setExecutable(true);
-
+                        if (!file.setExecutable(true)) {
+                            throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
+                        }
                     }
                 }
 
-                if (dependencyManager.equalsIgnoreCase("gradle")) {
+                if (dependencyManager.equalsIgnoreCase(GRADLE)) {
                     String gradleInitFileName = "miCiCd-init.gradle";
                     String gradleInitFileLocalPath = Jenkins.get().getRootDir() + "/leanix/console_scripts/" + gradleInitFileName;
+
                     // copy the file from the webserver to the local directory if it doesn't exist yet
                     if (!new File(gradleInitFileLocalPath).exists()) {
                         copyFileFromWebappToLocal("/console_scripts/" + gradleInitFileName, "/console_scripts/" + gradleInitFileName);
                     }
-                    if (!OS.contains("Windows")) {
+                    if (!OS.contains(WINDOWS)) {
                         dmFilePath = dmFilePath + "/";
                     }
                     processBuilder.command(filePath, dmFilePath, dependencyManager, gradleInitFileLocalPath);
 
                 } else {
-                    if (!OS.contains("Windows")) {
+                    if (!OS.contains(WINDOWS)) {
                         dmFilePath = dmFilePath + "/";
                     }
                     processBuilder.command(filePath, dmFilePath, dependencyManager);
                 }
 
-                // processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+
                 processBuilder.redirectErrorStream(true);
 
                 System.out.println("LeanIX Microservice Intelligence: Starting to build the dependencies file...");
@@ -96,7 +104,7 @@ public class DependencyHandler {
                         if (depFile.exists()) {
                             return depFile;
                         }
-                    } else if (dependencyManager.equalsIgnoreCase("gradle")) {
+                    } else if (dependencyManager.equalsIgnoreCase(GRADLE)) {
                         File depFile = new File(dmFilePath + "/build/reports/dependency-license/licenses.json");
                         if (depFile.exists()) {
                             return depFile;
@@ -110,9 +118,11 @@ public class DependencyHandler {
                 System.out.println(e.getMessage());
                 listener.getLogger().println(e.getMessage());
             } catch (IOException e) {
-                e.printStackTrace();
+                listener.getLogger().println(e.getMessage());
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                listener.getLogger().println(e.getMessage());
+            } catch (SecurityException e) {
+                listener.getLogger().println(e.getMessage());
             }
 
             return null;
@@ -135,7 +145,7 @@ public class DependencyHandler {
                 if (mavenPath != null) {
                     return mavenPath;
                 }
-            } else if (dependencyManager.equalsIgnoreCase("gradle")) {
+            } else if (dependencyManager.equalsIgnoreCase(GRADLE)) {
                 String gradlePath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
                 if (gradlePath != null) {
                     return gradlePath;
@@ -153,6 +163,7 @@ public class DependencyHandler {
             if (arr != null) {
                 for (File f : arr) {
                     boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
+
                     //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
                     if (!dependencyManager.equalsIgnoreCase("npm") || (!f.getPath().contains("node_modules") && !check)) {
                         File found = searchDependencyFile(scmRootFolder, f, fileName, dependencyManager);
@@ -166,9 +177,8 @@ public class DependencyHandler {
             if (file.getName().equals(fileName)) {
                 return new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
             } else {
-                if (getFileEnding(file.getName()).equals("gradle")) {
-                    File gradleFolder = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
-                    return gradleFolder;
+                if (getFileEnding(file.getName()).equals(GRADLE)) {
+                    return new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
                 }
             }
         }
@@ -188,12 +198,21 @@ public class DependencyHandler {
         String absoluteLocalFilePath = Jenkins.get().getRootDir() + "/leanix" + relativeLocalFilePath;
         if (rootUrl != null) {
             String fileURL = rootUrl.substring(0, rootUrl.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence" + relativeWebAppPath;
-            InputStream in = new URL(fileURL).openStream();
-            Path dirToCreate = Paths.get(absoluteLocalFilePath).getParent();
-            if (dirToCreate != null) {
-                Files.createDirectories(dirToCreate);
-                Files.copy(in, Paths.get(absoluteLocalFilePath), StandardCopyOption.REPLACE_EXISTING);
-                return absoluteLocalFilePath;
+            InputStream in = null;
+            try {
+                in = new URL(fileURL).openStream();
+                Path dirToCreate = Paths.get(absoluteLocalFilePath).getParent();
+                if (dirToCreate != null) {
+                    Files.createDirectories(dirToCreate);
+                    Files.copy(in, Paths.get(absoluteLocalFilePath), StandardCopyOption.REPLACE_EXISTING);
+                    return absoluteLocalFilePath;
+                }
+            } catch (IOException e) {
+                throw e;
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
             }
         }
         throw new NullPointerException("Jenkins Root URL is empty, files in webapp can not be accessed. File: " + relativeWebAppPath);

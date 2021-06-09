@@ -46,6 +46,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
+        // the constructor is needed, even if it is empty!
     }
 
 
@@ -159,7 +160,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     stage = env.get(deploymentstage);
                     version = env.get(deploymentversion);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println(e);
                 }
 
                 if (stage != null && !stage.equals("")) {
@@ -205,9 +206,16 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                         String jwtToken = getJWTToken(host, apiToken);
                         if (jwtToken != null && !jwtToken.isEmpty()) {
                             ConnectorHandler conHandler = new ConnectorHandler();
-                            int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
+                            int responseCode = 0;
+                            try {
+                                responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
+                            } catch (Exception e) {
+                                logAction.setResult(LeanIXLogAction.API_CALL_FAILED + " The following exception occurred: " + e.getMessage());
+                            }
                             if (responseCode < 200 || responseCode > 308) {
-                                logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
+                                if (responseCode != 0) {
+                                    logAction.setResult(LeanIXLogAction.API_CALL_FAILED + " Responsecode: " + responseCode);
+                                }
                                 run.setResult(Result.fromString(getJobresultchoice()));
                             }
                         } else {
@@ -262,7 +270,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         String token;
 
         try {
-            // TODO: Apply the hostname here to URL (from Credentials)
+            // Apply the hostname here to URL (from Credentials)
             URL url = new URL("https://" + hostname + "/services/mtm/v1/oauth2/token");
             String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -288,13 +296,13 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             }
             return token;
         } catch (ProtocolException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e);
         }
         return "";
     }
@@ -309,7 +317,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         private static Result jobresultchoicecentral = Result.SUCCESS;
 
 
-        public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckLxmanifestpath(@QueryParameter String value) {
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
             if (value.length() < 2)
@@ -317,16 +325,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckJobresultchoice(@QueryParameter String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckJobresultchoice(@QueryParameter String value) {
             if (!value.equals("") && !value.equals("FAILURE") && Result.fromString(value).equals(Result.FAILURE)) {
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_severityLevelWrong());
             }
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckHostname(@QueryParameter String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckHostname(@QueryParameter String value) {
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingHost());
             if (value.length() < 3)
@@ -334,8 +340,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckDependencymanager(@QueryParameter String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckDependencymanager(@QueryParameter String value) {
             if (!value.equals("") && Arrays.stream(DEPENDENCYMANAGERCHOICES).noneMatch(value::equals)) {
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_dependencyManagerChoiceWrong());
             }

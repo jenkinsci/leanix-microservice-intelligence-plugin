@@ -1,6 +1,7 @@
 package io.jenkins.plugins.leanixmi;
 
 
+import com.sun.akuma.CLibrary;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 import org.json.simple.parser.JSONParser;
@@ -51,18 +52,18 @@ public class JsonPipelineConfiguration {
             readFrom(inputStream);
 
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e);
         } catch (ParseException e) {
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e);
             jsonConfigString = "";
         } finally {
             try {
                 if (inputStream != null)
                     inputStream.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("An error occurred: " + e);
             }
 
         }
@@ -85,8 +86,7 @@ public class JsonPipelineConfiguration {
                 System.out.println("File created: " + fileCheck.getName());
             }
         } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
+            System.out.println("An error occurred: " + e.getMessage());
             return "Exception";
         }
 
@@ -95,21 +95,16 @@ public class JsonPipelineConfiguration {
             isJsonObject(jsonString);
 
             //create file writer
-            try (
-                    FileOutputStream fileStream = new FileOutputStream(customFilePath);
-                    OutputStreamWriter writer = new OutputStreamWriter(fileStream, StandardCharsets.UTF_8)
-            ) {
+            try {
+                FileOutputStream fileStream = new FileOutputStream(customFilePath);
+                OutputStreamWriter writer = new OutputStreamWriter(fileStream, StandardCharsets.UTF_8);
+
                 setJsonCorrect(true);
                 setSaveError(false);
-                try {
-                    writeTo(jsonString, writer);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    setSaveError(true);
-                    return "Exception";
-                }
-            } catch (final Exception e) {
-                e.printStackTrace();
+
+                writeTo(jsonString, writer);
+            } catch (IOException e) {
+                setSaveError(true);
                 return "Exception";
             }
         } catch (ParseException e) {
