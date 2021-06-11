@@ -60,12 +60,12 @@ public class ConnectorHandler {
                     .build();
 
             Response response = client.newCall(request).execute();
-            responseBody = response.body();
+            String responseJSON = response.body().string();
             int responseCode = response.code();
 
             if (responseCode < 200 || responseCode > 308) {
-                logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + "\n Response message: " + response.message());
-                listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + "\n Response message: " + response.message());
+                logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
+                listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
             }
 
 
