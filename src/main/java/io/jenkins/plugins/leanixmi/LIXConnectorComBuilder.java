@@ -20,11 +20,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -203,24 +200,17 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                         } else {
                             apiToken = this.getApitoken().getPlainText();
                         }
-                        String jwtToken = getJWTToken(host, apiToken);
+                        String jwtToken = getJWTToken(host, apiToken, logAction, listener);
                         if (jwtToken != null && !jwtToken.isEmpty()) {
                             ConnectorHandler conHandler = new ConnectorHandler();
-                            int responseCode = 0;
-                            try {
-                                responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
-                            } catch (Exception e) {
-                                logAction.setResult(LeanIXLogAction.API_CALL_FAILED + " The following exception occurred: " + e.getMessage());
-                            }
+
+                            int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON(), logAction, listener);
+
                             if (responseCode < 200 || responseCode > 308) {
-                                if (responseCode != 0) {
-                                    logAction.setResult(LeanIXLogAction.API_CALL_FAILED + " Responsecode: " + responseCode);
-                                }
                                 run.setResult(Result.fromString(getJobresultchoice()));
                             }
                         } else {
                             run.setResult(Result.fromString(getJobresultchoice()));
-                            logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
                         }
 
                     } else {
@@ -265,8 +255,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return configFound;
     }
 
-    private String getJWTToken(String hostname, String apiToken) {
-        // test for the use of API-Token and requesting JWT-Token
+    private String getJWTToken(String hostname, String apiToken, LeanIXLogAction logAction, TaskListener listener) {
+
         String token;
 
         try {
@@ -288,21 +278,19 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 collection = in.lines().collect(Collectors.joining());
                 JSONObject jsonObject = (JSONObject) JSONValue.parse(collection);
                 token = (String) jsonObject.get("access_token");
+                return token;
+            } catch (Exception e) {
+                logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+                listener.getLogger().println(LeanIXLogAction.TOKEN_FAILED + " Exception: " + e.getMessage());
             } finally {
                 if (in != null)
                     in.close();
                 output.close();
                 connection.disconnect();
             }
-            return token;
-        } catch (ProtocolException e) {
-            System.out.println("An error occurred: " + e);
-        } catch (MalformedURLException e) {
-            System.out.println("An error occurred: " + e);
-        } catch (IOException e) {
-            System.out.println("An error occurred: " + e);
         } catch (Exception e) {
-            System.out.println("An error occurred: " + e);
+            logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+            listener.getLogger().println(LeanIXLogAction.TOKEN_FAILED + " Exception: " + e.getMessage());
         }
         return "";
     }

@@ -1,6 +1,9 @@
 package io.jenkins.plugins.leanixmi;
 
 
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import okhttp3.*;
 import org.json.simple.JSONObject;
 
@@ -9,8 +12,7 @@ import java.io.IOException;
 
 public class ConnectorHandler {
 
-    public int sendFilesToConnector(String hostname, String jwtToken, String deploymentVersion, String deploymentStage, String dependencyManager, File projectDependencies, String manifestJSON) throws IOException {
-
+    public int sendFilesToConnector(String hostname, String jwtToken, String deploymentVersion, String deploymentStage, String dependencyManager, File projectDependencies, String manifestJSON, LeanIXLogAction logAction, TaskListener listener) {
 
 
         JSONObject dataObj = new JSONObject();
@@ -39,7 +41,7 @@ public class ConnectorHandler {
                             RequestBody.create(MediaType.parse("application/json"), dataObj.toJSONString()));
 
             if (projectDependencies != null) {
-                builder.addFormDataPart("",projectDependencies.getAbsolutePath(),
+                builder.addFormDataPart("", projectDependencies.getAbsolutePath(),
                         RequestBody.create(MediaType.parse("application/octet-stream"),
                                 new File(projectDependencies.getAbsolutePath())));
             }
@@ -59,14 +61,22 @@ public class ConnectorHandler {
 
             Response response = client.newCall(request).execute();
             responseBody = response.body();
+            int responseCode = response.code();
+
+            if (responseCode < 200 || responseCode > 308) {
+                logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + "\n Response message: " + response.message());
+                listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + "\n Response message: " + response.message());
+            }
+
 
             return response.code();
         } catch (Exception e) {
-            System.out.println(e);
-            throw e;
+            logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
+            listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
         } finally {
             if (responseBody != null)
                 responseBody.close();
         }
+        return 0;
     }
 }

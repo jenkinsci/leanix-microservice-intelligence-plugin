@@ -112,6 +112,7 @@ public class DependencyHandler {
                     }
                 } else {
                     System.out.println("LeanIX Microservice Intelligence: ERROR in building the dependencies file!");
+                    listener.getLogger().println("LeanIX Microservice Intelligence: ERROR in building the dependencies file, but no exception occurred.");
                 }
                 System.out.println(output);
             } catch (NullPointerException e) {
