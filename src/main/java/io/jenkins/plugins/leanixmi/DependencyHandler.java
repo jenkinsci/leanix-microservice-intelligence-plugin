@@ -21,7 +21,7 @@ public class DependencyHandler {
 
 
 
-    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener) {
+    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener, LeanIXLogAction logAction) {
 
         String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
         if (!dmFilePath.equals("")) {
@@ -29,8 +29,8 @@ public class DependencyHandler {
 
             ProcessBuilder processBuilder = new ProcessBuilder();
 
-            String filePath = "";
-            String fileName = "";
+            String filePath;
+            String fileName;
             if (OS.contains(WINDOWS)) {
                 fileName = "build_licenses.bat";
             } else {
@@ -79,6 +79,7 @@ public class DependencyHandler {
                 processBuilder.redirectErrorStream(true);
 
                 System.out.println("LeanIX Microservice Intelligence: Starting to build the dependencies file...");
+                listener.getLogger().println("LeanIX Microservice Intelligence: Starting to build the dependencies file...");
                 Process process = processBuilder.start();
 
                 StringBuilder output = new StringBuilder();
@@ -94,40 +95,44 @@ public class DependencyHandler {
                 int exitVal = process.waitFor();
                 if (exitVal == 0) {
                     System.out.println("LeanIX Microservice Intelligence: Success in building the dependencies file!");
+                    listener.getLogger().println("LeanIX Microservice Intelligence: Success in building the dependencies file!");
                     if (dependencyManager.equalsIgnoreCase("npm")) {
                         File depFile = new File(dmFilePath + "/dependencies.json");
                         if (depFile.exists()) {
                             return depFile;
+                        }else{
+                            WriteOutFileDoesntExist(listener, logAction, output);
                         }
                     } else if (dependencyManager.equalsIgnoreCase("maven")) {
                         File depFile = new File(dmFilePath + "/target/generated-resources/licenses.xml");
                         if (depFile.exists()) {
                             return depFile;
+                        }else{
+                            WriteOutFileDoesntExist(listener, logAction, output);
                         }
                     } else if (dependencyManager.equalsIgnoreCase(GRADLE)) {
                         File depFile = new File(dmFilePath + "/build/reports/dependency-license/licenses.json");
                         if (depFile.exists()) {
                             return depFile;
+                        }else{
+                            WriteOutFileDoesntExist(listener, logAction, output);
                         }
                     }
                 } else {
-                    System.out.println("LeanIX Microservice Intelligence: ERROR in building the dependencies file!");
-                    listener.getLogger().println("LeanIX Microservice Intelligence: ERROR in building the dependencies file, but no exception occurred.");
+                    System.out.println("LeanIX Microservice Intelligence: ERROR in building the dependencies file! \n Output of the build process: " + output);
+                    listener.getLogger().println("LeanIX Microservice Intelligence: ERROR in building the dependencies file, but no exception occurred. \n Output of the build process: " + output);
+                    logAction.setResult("LeanIX Microservice Intelligence: ERROR in building the dependencies file, but no exception occurred. \n Output of the build process: " + output);
                 }
                 System.out.println(output);
-            } catch (NullPointerException e) {
-                System.out.println(e.getMessage());
-                listener.getLogger().println(e.getMessage());
-            } catch (IOException e) {
-                listener.getLogger().println(e.getMessage());
-            } catch (InterruptedException e) {
-                listener.getLogger().println(e.getMessage());
-            } catch (SecurityException e) {
-                listener.getLogger().println(e.getMessage());
+
+            } catch (NullPointerException | IOException | InterruptedException | SecurityException e) {
+                WriteOutDependencyGenerationException(e.getMessage(), listener, logAction);
             }
 
             return null;
         } else {
+            logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED + "\n Reason: The file for your chosen dependencymanager (" + dependencyManager + ") could not be found.");
+            listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED + "\n Reason: The file for your chosen dependencymanager (" + dependencyManager + ") could not be found.");
             return null;
         }
     }
@@ -138,17 +143,17 @@ public class DependencyHandler {
         try {
             if (dependencyManager.equalsIgnoreCase("npm")) {
                 String npmPath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
-                if (npmPath != null) {
+                if (!npmPath.equals("")) {
                     return npmPath;
                 }
             } else if (dependencyManager.equalsIgnoreCase("maven")) {
                 String mavenPath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "pom.xml", dependencyManager).getAbsolutePath();
-                if (mavenPath != null) {
+                if (!mavenPath.equals("")) {
                     return mavenPath;
                 }
             } else if (dependencyManager.equalsIgnoreCase(GRADLE)) {
                 String gradlePath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "build.gradle", dependencyManager).getAbsolutePath();
-                if (gradlePath != null) {
+                if (!gradlePath.equals("")) {
                     return gradlePath;
                 }
             }
@@ -217,5 +222,15 @@ public class DependencyHandler {
             }
         }
         throw new NullPointerException("Jenkins Root URL is empty, files in webapp can not be accessed. File: " + relativeWebAppPath);
+    }
+
+    private void WriteOutFileDoesntExist(TaskListener listener, LeanIXLogAction logAction, StringBuilder output){
+        logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED + "\n The generated dependency file doesn't seem to exist or can't be found.");
+        listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED + "\n The generated dependency file doesn't seem to exist or can't be found.");
+        listener.getLogger().println("Output of the dependency building process: " + output);
+    }
+    private void WriteOutDependencyGenerationException(String exceptionMessage, TaskListener listener, LeanIXLogAction logAction){
+        logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED + "\n The following exception occurred: " + exceptionMessage);
+        listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED + "\n The following exception occurred: " + exceptionMessage);
     }
 }

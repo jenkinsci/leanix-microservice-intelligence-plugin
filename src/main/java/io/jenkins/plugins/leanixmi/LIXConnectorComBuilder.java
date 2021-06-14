@@ -95,7 +95,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return apitoken;
     }
 
-
     public String getJobresultchoice() {
         return jobresultchoice;
     }
@@ -186,10 +185,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (run.getResult() != null && manifestFileFound) {
 
                         File projectDependencies =
-                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener);
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener, logAction);
                         if (projectDependencies == null) {
-                            logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
-                            listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
                             run.setResult(Result.fromString(getJobresultchoice()));
                         }
 
