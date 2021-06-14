@@ -1,6 +1,9 @@
 package io.jenkins.plugins.leanixmi;
 
 
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import okhttp3.*;
 import org.json.simple.JSONObject;
 
@@ -9,15 +12,13 @@ import java.io.IOException;
 
 public class ConnectorHandler {
 
-    public int sendFilesToConnector(String hostname, String jwtToken, String deploymentVersion, String deploymentStage, String dependencyManager, File projectDependencies, String manifestJSON) throws IOException {
+    public int sendFilesToConnector(String hostname, String jwtToken, String deploymentVersion, String deploymentStage, String dependencyManager, File projectDependencies, String manifestJSON, LeanIXLogAction logAction, TaskListener listener) {
 
-        // String boundary = Long.toString(System.currentTimeMillis());
 
         JSONObject dataObj = new JSONObject();
         dataObj.put("version", deploymentVersion);
         dataObj.put("stage", deploymentStage);
         dataObj.put("dependencyManager", dependencyManager);
-        // String dataObjectString = dataObj.toJSONString();
 
         ResponseBody responseBody = null;
         try {
@@ -35,14 +36,12 @@ public class ConnectorHandler {
 
             MultipartBody.Builder builder = new MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
-                    .addFormDataPart("manifest", "manifest",
-                            RequestBody.create(MediaType.parse("text/plain"), manifestJSON))
+                    .addFormDataPart("manifest", "manifest", RequestBody.create(MediaType.parse("text/plain"), manifestJSON))
                     .addFormDataPart("data", "data",
                             RequestBody.create(MediaType.parse("application/json"), dataObj.toJSONString()));
-            // TODO: This part doesn't work yet!
+
             if (projectDependencies != null) {
-              // builder.addFormDataPart("dependencies", null, RequestBody.create(MediaType.parse(""), projectDependencies));
-                builder.addFormDataPart("",projectDependencies.getAbsolutePath(),
+                builder.addFormDataPart("", projectDependencies.getAbsolutePath(),
                         RequestBody.create(MediaType.parse("application/octet-stream"),
                                 new File(projectDependencies.getAbsolutePath())));
             }
@@ -61,16 +60,23 @@ public class ConnectorHandler {
                     .build();
 
             Response response = client.newCall(request).execute();
-            responseBody = response.body();
+            String responseJSON = response.body().string();
+            int responseCode = response.code();
+
+            if (responseCode < 200 || responseCode > 308) {
+                logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
+                listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
+            }
+
 
             return response.code();
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
+            logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
+            listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
         } finally {
             if (responseBody != null)
                 responseBody.close();
         }
-
+        return 0;
     }
 }

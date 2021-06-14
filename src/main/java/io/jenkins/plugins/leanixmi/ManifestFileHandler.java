@@ -57,13 +57,10 @@ public class ManifestFileHandler {
                         return true;
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
                     setBuildFailed(run, logAction, LeanIXLogAction.SCM_FAILED);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                     setBuildFailed(run, logAction, LeanIXLogAction.SCM_FAILED);
                 } catch (ParseException e) {
-                    e.printStackTrace();
                     setBuildFailed(run, logAction, LeanIXLogAction.MANIFEST_WRONG);
                 }
             } else {

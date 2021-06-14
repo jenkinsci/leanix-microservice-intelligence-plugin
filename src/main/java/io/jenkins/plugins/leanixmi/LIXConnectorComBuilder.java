@@ -20,11 +20,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -46,6 +43,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
+        // the constructor is needed, even if it is empty!
     }
 
 
@@ -96,7 +94,6 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     public Secret getApitoken() {
         return apitoken;
     }
-
 
     public String getJobresultchoice() {
         return jobresultchoice;
@@ -159,7 +156,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     stage = env.get(deploymentstage);
                     version = env.get(deploymentversion);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println(e);
                 }
 
                 if (stage != null && !stage.equals("")) {
@@ -188,10 +185,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (run.getResult() != null && manifestFileFound) {
 
                         File projectDependencies =
-                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener);
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener, logAction);
                         if (projectDependencies == null) {
-                            logAction.setResult(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
-                            listener.getLogger().println(LeanIXLogAction.DEPENDENCIES_NOT_GENERATED);
                             run.setResult(Result.fromString(getJobresultchoice()));
                         }
 
@@ -202,17 +197,17 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                         } else {
                             apiToken = this.getApitoken().getPlainText();
                         }
-                        String jwtToken = getJWTToken(host, apiToken);
+                        String jwtToken = getJWTToken(host, apiToken, logAction, listener);
                         if (jwtToken != null && !jwtToken.isEmpty()) {
                             ConnectorHandler conHandler = new ConnectorHandler();
-                            int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON());
+
+                            int responseCode = conHandler.sendFilesToConnector(host, jwtToken, version, stage, dependencymanager, projectDependencies, manifestFileHandler.getManifestJSON(), logAction, listener);
+
                             if (responseCode < 200 || responseCode > 308) {
-                                logAction.setResult(LeanIXLogAction.API_CALL_FAILED);
                                 run.setResult(Result.fromString(getJobresultchoice()));
                             }
                         } else {
                             run.setResult(Result.fromString(getJobresultchoice()));
-                            logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
                         }
 
                     } else {
@@ -257,12 +252,12 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         return configFound;
     }
 
-    private String getJWTToken(String hostname, String apiToken) {
-        // test for the use of API-Token and requesting JWT-Token
+    private String getJWTToken(String hostname, String apiToken, LeanIXLogAction logAction, TaskListener listener) {
+
         String token;
 
         try {
-            // TODO: Apply the hostname here to URL (from Credentials)
+            // Apply the hostname here to URL (from Credentials)
             URL url = new URL("https://" + hostname + "/services/mtm/v1/oauth2/token");
             String encoding = Base64.getEncoder().encodeToString(("apitoken:" + apiToken).getBytes(StandardCharsets.UTF_8));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -280,21 +275,19 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                 collection = in.lines().collect(Collectors.joining());
                 JSONObject jsonObject = (JSONObject) JSONValue.parse(collection);
                 token = (String) jsonObject.get("access_token");
+                return token;
+            } catch (Exception e) {
+                logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+                listener.getLogger().println(LeanIXLogAction.TOKEN_FAILED + " Exception: " + e.getMessage());
             } finally {
                 if (in != null)
                     in.close();
                 output.close();
                 connection.disconnect();
             }
-            return token;
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
+            logAction.setResult(LeanIXLogAction.TOKEN_FAILED);
+            listener.getLogger().println(LeanIXLogAction.TOKEN_FAILED + " Exception: " + e.getMessage());
         }
         return "";
     }
@@ -309,7 +302,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         private static Result jobresultchoicecentral = Result.SUCCESS;
 
 
-        public FormValidation doCheckLxmanifestpath(@QueryParameter String value) throws IOException, ServletException {
+        public FormValidation doCheckLxmanifestpath(@QueryParameter String value) {
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingLXManifestPath());
             if (value.length() < 2)
@@ -317,16 +310,14 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckJobresultchoice(@QueryParameter String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckJobresultchoice(@QueryParameter String value) {
             if (!value.equals("") && !value.equals("FAILURE") && Result.fromString(value).equals(Result.FAILURE)) {
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_severityLevelWrong());
             }
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckHostname(@QueryParameter String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckHostname(@QueryParameter String value) {
             if (value.length() == 0)
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_missingHost());
             if (value.length() < 3)
@@ -334,8 +325,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
             return FormValidation.ok();
         }
 
-        public FormValidation doCheckDependencymanager(@QueryParameter String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckDependencymanager(@QueryParameter String value) {
             if (!value.equals("") && Arrays.stream(DEPENDENCYMANAGERCHOICES).noneMatch(value::equals)) {
                 return FormValidation.error(Messages.LIXConnectorComBuilder_DescriptorImpl_errors_dependencyManagerChoiceWrong());
             }
