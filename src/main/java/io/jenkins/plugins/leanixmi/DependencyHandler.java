@@ -183,7 +183,7 @@ public class DependencyHandler {
             if (file.getName().equals(fileName)) {
                 return new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
             } else {
-                if (getFileEnding(file.getName()).equals(GRADLE)) {
+                if (getFileEnding(file.getName()).equalsIgnoreCase(GRADLE)) {
                     return new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
                 }
             }
