@@ -3,7 +3,7 @@
 ## Introduction
 <br>
 
-This plugin connects Jenkins Jobs with your LeanIX workspace. When the plugin is integrated in your Jenkins pipelines and jobs, information on your services built and deployed with Jenkins can be called up in LeaxIX factsheets .
+This plugin connects Jenkins Jobs with your LeanIX workspace. When the plugin is integrated in your Jenkins pipelines and jobs, information on your services built and deployed with Jenkins can be called up in LeanIX fact sheets .
 
 <br>
 
