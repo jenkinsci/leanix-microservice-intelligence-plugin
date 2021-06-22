@@ -1,14 +1,10 @@
 package io.jenkins.plugins.leanixmi;
-
-
-import com.sun.akuma.CLibrary;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.jenkins.plugins.leanixmi.scriptresources.Configurations;
 import jenkins.model.Jenkins;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 
@@ -16,7 +12,6 @@ public class JsonPipelineConfiguration {
 
     private String jsonConfigString;
     private Object jsonConfig;
-    private String defaultFilePath;
     private String customFilePath;
     private String customFileDirectory;
     private static final String jsonIncorrectWarning = "There seems to be an error in your JSON string, please check it.";
@@ -41,12 +36,10 @@ public class JsonPipelineConfiguration {
         try {
             if (new File(customFilePath).exists()) {
                 inputStream = new FileInputStream(customFilePath);
-                // need to use the way over UTF-8 because of different platforms and findbugs
 
             } else {
 
-                URL defaultUrl = new URL(defaultFilePath);
-                inputStream = defaultUrl.openStream();
+                inputStream = new ByteArrayInputStream(Configurations.defaultPipelineConfigJSON.getBytes(StandardCharsets.UTF_8));
             }
 
             readFrom(inputStream);
@@ -129,12 +122,8 @@ public class JsonPipelineConfiguration {
     }
 
     private void setFilePathsAndDirectories(Jenkins jenkins) {
-        String url = jenkins.getRootUrl();
-        if (url != null) {
-            setDefaultFilePath(url.substring(0, url.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence/jsonpipelineconfiguration/defaultjsonconfig.json");
-        }
-        setCustomFileDirectory(jenkins.getRootDir() + "/leanix/jsonPipelineConfiguration");
-        setCustomFilePath(jenkins.getRootDir() + "/leanix/jsonPipelineConfiguration/customJsonConfig.json");
+        setCustomFileDirectory(jenkins.getRootDir() + "/leanix/jsonpipelineconfiguration");
+        setCustomFilePath(jenkins.getRootDir() + "/leanix/jsonpipelineconfiguration/customjsonconfig.json");
     }
 
     // @SuppressFBWarnings: Error in the spotbugs version jenkins uses, if updated the annotation can maybe be removed
@@ -148,9 +137,6 @@ public class JsonPipelineConfiguration {
         }
     }
 
-    private void setDefaultFilePath(String defaultPath) {
-        defaultFilePath = defaultPath;
-    }
 
     private void setCustomFilePath(String customPath) {
         customFilePath = customPath;

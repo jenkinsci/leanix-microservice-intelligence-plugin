@@ -1,15 +1,14 @@
 package io.jenkins.plugins.leanixmi;
 
 import hudson.model.TaskListener;
+import io.jenkins.plugins.leanixmi.scriptresources.BuildScripts;
+import io.jenkins.plugins.leanixmi.scriptresources.ShellScripts;
 import jenkins.model.Jenkins;
-
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 public class DependencyHandler {
 
@@ -31,11 +30,14 @@ public class DependencyHandler {
 
             String filePath;
             String fileName;
+            String scriptObject;
             if (OS.contains(WINDOWS)) {
                 fileName = "build_licenses.bat";
+                scriptObject = ShellScripts.batchScriptWin;
             } else {
                 fileName = "build_licenses.sh";
-            }
+                scriptObject = ShellScripts.shellScript;
+             }
             filePath = Jenkins.get().getRootDir() + "/leanix/console_scripts/" + fileName;
             BufferedReader reader;
             try {
@@ -46,7 +48,7 @@ public class DependencyHandler {
                         throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
                     }
                 } else {
-                    String scriptFileCopiedPath = copyFileFromWebappToLocal("/console_scripts/" + fileName, "/console_scripts/" + fileName);
+                    String scriptFileCopiedPath = generateFileForLocalFilesystem("/console_scripts/" + fileName, scriptObject);
                     File scriptFile = new File(scriptFileCopiedPath);
                     if (scriptFile.exists()) {
                         if (!file.setExecutable(true)) {
@@ -56,12 +58,12 @@ public class DependencyHandler {
                 }
 
                 if (dependencyManager.equalsIgnoreCase(GRADLE)) {
-                    String gradleInitFileName = "miCiCd-init.gradle";
+                    String gradleInitFileName = "micicd-init.gradle";
                     String gradleInitFileLocalPath = Jenkins.get().getRootDir() + "/leanix/console_scripts/" + gradleInitFileName;
 
                     // copy the file from the webserver to the local directory if it doesn't exist yet
                     if (!new File(gradleInitFileLocalPath).exists()) {
-                        copyFileFromWebappToLocal("/console_scripts/" + gradleInitFileName, "/console_scripts/" + gradleInitFileName);
+                        generateFileForLocalFilesystem("/console_scripts/" + gradleInitFileName, BuildScripts.gradleInitScript);
                     }
                     if (!OS.contains(WINDOWS)) {
                         dmFilePath = dmFilePath + "/";
@@ -199,29 +201,19 @@ public class DependencyHandler {
         return "";
     }
 
-    private String copyFileFromWebappToLocal(String relativeWebAppPath, String relativeLocalFilePath) throws IOException {
-        String rootUrl = Jenkins.get().getRootUrl();
+    private String generateFileForLocalFilesystem(String relativeLocalFilePath, String scriptObj) throws IOException {
         String absoluteLocalFilePath = Jenkins.get().getRootDir() + "/leanix" + relativeLocalFilePath;
-        if (rootUrl != null) {
-            String fileURL = rootUrl.substring(0, rootUrl.length() - 1) + Jenkins.RESOURCE_PATH + "/plugin/leanix-microservice-intelligence" + relativeWebAppPath;
-            InputStream in = null;
             try {
-                in = new URL(fileURL).openStream();
+
                 Path dirToCreate = Paths.get(absoluteLocalFilePath).getParent();
                 if (dirToCreate != null) {
                     Files.createDirectories(dirToCreate);
-                    Files.copy(in, Paths.get(absoluteLocalFilePath), StandardCopyOption.REPLACE_EXISTING);
-                    return absoluteLocalFilePath;
+                    Files.write( Paths.get(absoluteLocalFilePath), scriptObj.getBytes(StandardCharsets.UTF_8));
                 }
             } catch (IOException e) {
                 throw e;
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
             }
-        }
-        throw new NullPointerException("Jenkins Root URL is empty, files in webapp can not be accessed. File: " + relativeWebAppPath);
+        return absoluteLocalFilePath;
     }
 
     private void WriteOutFileDoesntExist(TaskListener listener, LeanIXLogAction logAction, StringBuilder output){
