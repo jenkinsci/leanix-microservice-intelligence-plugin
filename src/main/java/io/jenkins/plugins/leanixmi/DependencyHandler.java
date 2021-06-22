@@ -44,13 +44,16 @@ public class DependencyHandler {
 
                 File file = new File(filePath);
                 if (file.exists()) {
+                    listener.getLogger().println("...script file for dependency generation already exists on local file system...");
                     if (!file.setExecutable(true)) {
                         throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
                     }
                 } else {
+                    listener.getLogger().println("...generating script file for dependency generation on local file system...");
                     String scriptFileCopiedPath = generateFileForLocalFilesystem("/console_scripts/" + fileName, scriptObject);
                     File scriptFile = new File(scriptFileCopiedPath);
                     if (scriptFile.exists()) {
+                        listener.getLogger().println("...script file successfully generated...");
                         if (!file.setExecutable(true)) {
                             throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
                         }

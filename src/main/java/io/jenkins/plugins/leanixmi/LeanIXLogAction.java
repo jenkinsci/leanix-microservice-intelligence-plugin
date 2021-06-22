@@ -18,6 +18,7 @@ public class LeanIXLogAction implements RunAction2 {
     public static final String MANIFEST_WRONG = "The manifest file could not be parsed, please check that it is correct.";
     public static final String MANIFEST_NOTFOUND = "The manifest file could not be found in your Source Code Management System, please check that the path you specified is correct.";
     public static final String API_CALL_FAILED = "Could not send the LeanIX-data successfully. The API responded with an error. Please check your host name.";
+    public static final String API_CALL_EXCEPTION = "Could not send the LeanIX-data to the API successfully. An exception occurred.";
     public static final String SUCCESS = "Success: The LeanIX-data was transmitted successfully.";
     public static final String STAGE_NOTSET = "Deployment stage variable value is not set in jenkins environment.";
     public static final String VERSION_NOTSET = "Deployment version variable or deployment version value is not set in jenkins environment.";

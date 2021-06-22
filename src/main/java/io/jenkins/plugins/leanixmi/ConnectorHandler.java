@@ -71,8 +71,8 @@ public class ConnectorHandler {
 
             return response.code();
         } catch (Exception e) {
-            logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
-            listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
+            logAction.setResult(LeanIXLogAction.API_CALL_EXCEPTION + "\n Exception: " + e.getMessage());
+            listener.getLogger().println(LeanIXLogAction.API_CALL_EXCEPTION + "\n Exception: " + e.getMessage());
         } finally {
             if (responseBody != null)
                 responseBody.close();
