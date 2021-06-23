@@ -18,7 +18,9 @@ public class ConnectorHandler {
         JSONObject dataObj = new JSONObject();
         dataObj.put("version", deploymentVersion);
         dataObj.put("stage", deploymentStage);
-        dataObj.put("dependencyManager", dependencyManager);
+        if(!dependencyManager.equals("")) {
+            dataObj.put("dependencyManager", dependencyManager);
+        }
 
         ResponseBody responseBody = null;
         try {
@@ -40,7 +42,7 @@ public class ConnectorHandler {
                     .addFormDataPart("data", "data",
                             RequestBody.create(MediaType.parse("application/json"), dataObj.toJSONString()));
 
-            if (projectDependencies != null) {
+            if (projectDependencies != null && !dependencyManager.equals("")) {
                 builder.addFormDataPart("", projectDependencies.getAbsolutePath(),
                         RequestBody.create(MediaType.parse("application/octet-stream"),
                                 new File(projectDependencies.getAbsolutePath())));
@@ -66,6 +68,8 @@ public class ConnectorHandler {
             if (responseCode < 200 || responseCode > 308) {
                 logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
                 listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
+            }else{
+                listener.getLogger().println("The LeanIX API was called and responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
             }
 
 

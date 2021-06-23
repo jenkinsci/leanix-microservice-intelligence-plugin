@@ -13,14 +13,22 @@ import java.nio.file.Paths;
 public class DependencyHandler {
 
 
-    private static final String NO_PERMISSION_TO_EXECUTE = "You have no permissions to execute a script file. Please contact your administrator!";
+    private static final String NO_PERMISSION_TO_EXECUTE = "You have no permissions to execute a script file. Please check your access rights respectively contact an administrator!";
     private static final String WINDOWS = "Windows";
+    private static final String NPM = "npm";
+    private static final String MAVEN = "maven";
     private static final String GRADLE = "gradle";
     private final String OS = System.getProperty("os.name");
 
 
 
     public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener, LeanIXLogAction logAction) {
+
+        if(dependencyManager.equals("")){
+                logAction.setResult(LeanIXLogAction.DEPENDENCY_MANAGER_NOT_SET);
+                listener.getLogger().println(LeanIXLogAction.DEPENDENCY_MANAGER_NOT_SET);
+                return null;
+        }
 
         String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
         if (!dmFilePath.equals("")) {
@@ -64,7 +72,7 @@ public class DependencyHandler {
                     String gradleInitFileName = "micicd-init.gradle";
                     String gradleInitFileLocalPath = Jenkins.get().getRootDir() + "/leanix/console_scripts/" + gradleInitFileName;
 
-                    // copy the file from the webserver to the local directory if it doesn't exist yet
+                    // generate the gradle script in the local file system, if it doesn't yet exist
                     if (!new File(gradleInitFileLocalPath).exists()) {
                         generateFileForLocalFilesystem("/console_scripts/" + gradleInitFileName, BuildScripts.gradleInitScript);
                     }
@@ -101,14 +109,14 @@ public class DependencyHandler {
                 if (exitVal == 0) {
                     System.out.println("LeanIX Microservice Intelligence: Success in building the dependencies file!");
                     listener.getLogger().println("LeanIX Microservice Intelligence: Success in building the dependencies file!");
-                    if (dependencyManager.equalsIgnoreCase("npm")) {
+                    if (dependencyManager.equalsIgnoreCase(NPM)) {
                         File depFile = new File(dmFilePath + "/dependencies.json");
                         if (depFile.exists()) {
                             return depFile;
                         }else{
                             WriteOutFileDoesntExist(listener, logAction, output);
                         }
-                    } else if (dependencyManager.equalsIgnoreCase("maven")) {
+                    } else if (dependencyManager.equalsIgnoreCase(MAVEN)) {
                         File depFile = new File(dmFilePath + "/target/generated-resources/licenses.xml");
                         if (depFile.exists()) {
                             return depFile;
@@ -146,12 +154,12 @@ public class DependencyHandler {
 
 
         try {
-            if (dependencyManager.equalsIgnoreCase("npm")) {
+            if (dependencyManager.equalsIgnoreCase(NPM)) {
                 String npmPath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "package.json", dependencyManager).getAbsolutePath();
                 if (!npmPath.equals("")) {
                     return npmPath;
                 }
-            } else if (dependencyManager.equalsIgnoreCase("maven")) {
+            } else if (dependencyManager.equalsIgnoreCase(MAVEN)) {
                 String mavenPath = searchDependencyFile(scmRootFolder, scmRootFolderFile, "pom.xml", dependencyManager).getAbsolutePath();
                 if (!mavenPath.equals("")) {
                     return mavenPath;
@@ -176,7 +184,7 @@ public class DependencyHandler {
                     boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
 
                     //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
-                    if (!dependencyManager.equalsIgnoreCase("npm") || (!f.getPath().contains("node_modules") && !check)) {
+                    if (!dependencyManager.equalsIgnoreCase(NPM) || (!f.getPath().contains("node_modules") && !check)) {
                         File found = searchDependencyFile(scmRootFolder, f, fileName, dependencyManager);
                         if (found != null) {
                             return found;

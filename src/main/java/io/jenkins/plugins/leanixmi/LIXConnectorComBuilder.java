@@ -72,7 +72,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
 
     @DataBoundSetter
     public void setDependencymanager(String dependencymanager) {
-        if (Arrays.asList(DescriptorImpl.DEPENDENCYMANAGERCHOICES).contains(dependencymanager)) {
+        if (Arrays.asList(DescriptorImpl.DEPENDENCYMANAGERCHOICES).stream().anyMatch(dependencymanager::equalsIgnoreCase)) {
             this.dependencymanager = dependencymanager;
         }
     }
