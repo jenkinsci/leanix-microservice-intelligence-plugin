@@ -1,14 +1,11 @@
 package io.jenkins.plugins.leanixmi;
 
 
-import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 import okhttp3.*;
 import org.json.simple.JSONObject;
-
 import java.io.File;
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class ConnectorHandler {
 
@@ -18,12 +15,19 @@ public class ConnectorHandler {
         JSONObject dataObj = new JSONObject();
         dataObj.put("version", deploymentVersion);
         dataObj.put("stage", deploymentStage);
-        dataObj.put("dependencyManager", dependencyManager);
+        if(!dependencyManager.equals("")) {
+            dataObj.put("dependencyManager", dependencyManager);
+        }
 
         ResponseBody responseBody = null;
         try {
 
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .connectTimeout(60,TimeUnit.SECONDS)
+                    .writeTimeout(60,TimeUnit.SECONDS)
+                    .readTimeout(60,TimeUnit.SECONDS)
+                    .build();
+
             HttpUrl httpUrl = new HttpUrl.Builder()
                     .scheme("https")
                     .host(hostname)
@@ -40,7 +44,7 @@ public class ConnectorHandler {
                     .addFormDataPart("data", "data",
                             RequestBody.create(MediaType.parse("application/json"), dataObj.toJSONString()));
 
-            if (projectDependencies != null) {
+            if (projectDependencies != null && !dependencyManager.equals("")) {
                 builder.addFormDataPart("", projectDependencies.getAbsolutePath(),
                         RequestBody.create(MediaType.parse("application/octet-stream"),
                                 new File(projectDependencies.getAbsolutePath())));
@@ -66,13 +70,15 @@ public class ConnectorHandler {
             if (responseCode < 200 || responseCode > 308) {
                 logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
                 listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n API responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
+            }else{
+                listener.getLogger().println("The LeanIX API was called and responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
             }
 
 
             return response.code();
         } catch (Exception e) {
-            logAction.setResult(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
-            listener.getLogger().println(LeanIXLogAction.API_CALL_FAILED + "\n Exception: " + e.getMessage());
+            logAction.setResult(LeanIXLogAction.API_CALL_EXCEPTION + "\n Exception: " + e.getMessage());
+            listener.getLogger().println(LeanIXLogAction.API_CALL_EXCEPTION + "\n Exception: " + e.getMessage());
         } finally {
             if (responseBody != null)
                 responseBody.close();
