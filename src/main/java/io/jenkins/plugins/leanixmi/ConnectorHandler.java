@@ -1,14 +1,11 @@
 package io.jenkins.plugins.leanixmi;
 
 
-import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 import okhttp3.*;
 import org.json.simple.JSONObject;
-
 import java.io.File;
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class ConnectorHandler {
 
@@ -25,7 +22,12 @@ public class ConnectorHandler {
         ResponseBody responseBody = null;
         try {
 
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .connectTimeout(60,TimeUnit.SECONDS)
+                    .writeTimeout(60,TimeUnit.SECONDS)
+                    .readTimeout(60,TimeUnit.SECONDS)
+                    .build();
+
             HttpUrl httpUrl = new HttpUrl.Builder()
                     .scheme("https")
                     .host(hostname)

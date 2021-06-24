@@ -79,13 +79,13 @@ public class DependencyHandler {
                     if (!OS.contains(WINDOWS)) {
                         dmFilePath = dmFilePath + "/";
                     }
-                    processBuilder.command(filePath, dmFilePath, dependencyManager, gradleInitFileLocalPath);
+                    processBuilder.command(filePath, dmFilePath, dependencyManager.toUpperCase(), gradleInitFileLocalPath);
 
                 } else {
                     if (!OS.contains(WINDOWS)) {
                         dmFilePath = dmFilePath + "/";
                     }
-                    processBuilder.command(filePath, dmFilePath, dependencyManager);
+                    processBuilder.command(filePath, dmFilePath, dependencyManager.toUpperCase());
                 }
 
 
@@ -196,7 +196,7 @@ public class DependencyHandler {
             if (file.getName().equals(fileName)) {
                 return new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
             } else {
-                if (getFileEnding(file.getName()).equalsIgnoreCase(GRADLE)) {
+                if (dependencyManager.equalsIgnoreCase(GRADLE) && getFileEnding(file.getName()).equalsIgnoreCase(GRADLE)) {
                     return new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - file.getName().length() - 1));
                 }
             }

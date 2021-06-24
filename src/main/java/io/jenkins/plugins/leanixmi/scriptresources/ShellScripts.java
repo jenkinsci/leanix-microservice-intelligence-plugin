@@ -7,7 +7,7 @@ public class ShellScripts {
             "set gradleInitFile=%3%\n" +
             "if %packageManager%==NPM (\n" +
             "cd %pathToDependencyDir%\n" +
-            "npm install license-checker\n" +
+            "npm install -g license-checker\n" +
             "npm install\n" +
             "license-checker --json > %pathToDependencyDir%/dependencies.json\n" +
             ")\n" +
