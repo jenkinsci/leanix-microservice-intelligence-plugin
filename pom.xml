@@ -9,12 +9,16 @@
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>leanix-microservice-intelligence</artifactId>
-    <version>1.0.7</version>
+    <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
+        <gitHubRepo>jenkinsci/leanix-microservice-intelligence-plugin</gitHubRepo>
+        <revision>1.8</revision>
+        <changelist>-SNAPSHOT</changelist>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.283</jenkins.version>
         <java.level>8</java.level>
+        <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
         <!-- Other properties you may want to use:
           ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
           ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
@@ -22,7 +26,7 @@
      -->
     </properties>
     <name>LeanIX Microservice Intelligence</name>
-    <url>https://github.com/jenkinsci/leanix-microservice-intelligence-plugin</url>
+    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -153,23 +157,7 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- If you want this to appear on the wiki page:
-    <developers>
-      <developer>
-        <id>bhacker</id>
-        <name>Bob Q. Hacker</name>
-        <email>bhacker@nowhere.net</email>
-      </developer>
-    </developers> -->
 
-    <!-- Assuming you want to host on @jenkinsci:
-    <url>https://wiki.jenkins.io/display/JENKINS/LeanIX_CICD</url>
-    <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    </scm>
-    -->
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
@@ -184,6 +172,10 @@
     </pluginRepositories>
 
   <scm>
-    <tag>leanix-microservice-intelligence-1.0.7</tag>
+      <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
+      <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+      <url>https://github.com/${gitHubRepo}</url>
+      <tag>${scmTag}</tag>
   </scm>
+
 </project>
