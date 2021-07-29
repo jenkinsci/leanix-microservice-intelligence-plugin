@@ -1,9 +1,11 @@
 name: notification
 
 on:
-  pull_request:
+  workflow_run:
+    workflows:
+      - cd
     types:
-      - closed
+      - completed
 
 env:
   SLACK-CHANNEL: '#mi-connectors-notifications'
