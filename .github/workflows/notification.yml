@@ -1,17 +1,16 @@
 name: notification
 
 on:
-  workflow_run:
-    workflows:
-      - main
+  pull_request:
     types:
-      - completed
+      - closed
 
 env:
   SLACK-CHANNEL: '#mi-connectors-notifications'
 
 jobs:
   notify:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Get credentials
