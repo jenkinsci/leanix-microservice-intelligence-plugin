@@ -29,7 +29,6 @@ jobs:
             :beers: ${{ github.repository }} successfully published to market place! More information@ ${{ github.event.workflow_run.html_url }}
 
       - name: Send CI/CD pipeline failure message
-      - name: Send CI/CD pipeline failure message
         if: ${{ github.event.workflow_run.conclusion == 'failure' }}
         uses: archive/github-actions-slack@v1.0.0
         with:
