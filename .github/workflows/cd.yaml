@@ -3,14 +3,13 @@
 name: cd
 on:
   workflow_dispatch:
-#  check_run:
-#    types:
-#      - completed
+  check_run:
+    types:
+      - completed
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    if: github.ref=='refs/heads/main'
     outputs:
       should_release: ${{ steps.verify-ci-status.outputs.result == 'success' && steps.interesting-categories.outputs.interesting == 'true' }}
     steps:
