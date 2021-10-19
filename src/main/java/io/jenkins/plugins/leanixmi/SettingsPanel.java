@@ -162,7 +162,7 @@ public class SettingsPanel implements RootAction {
     }
 
     public String getDisplayName() {
-        return "LeanIX Microservice Intelligence";
+        return "LeanIX Value Stream Management";
     }
 
     public String getUrlName() {

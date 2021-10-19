@@ -43,7 +43,7 @@ public class LeanIXLogAction implements RunAction2 {
 
     @Override
     public String getDisplayName() {
-        return "LeanIX Microservice Intelligence Log";
+        return "LeanIX Value Stream Management Log";
     }
 
     @Override

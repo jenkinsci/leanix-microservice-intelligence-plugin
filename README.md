@@ -11,9 +11,9 @@ This plugin connects Jenkins Jobs with your LeanIX workspace. When the plugin is
 
 <br>
 <br>
-In order to be able to use the LeanIX Microservice Intelligence Plugin, the following requirements must first be met:
+In order to be able to use the LeanIX Value Stream Management, the following requirements must first be met:
 
-* The LeanIX Microservice Intelligence plugin must be installed: https://www.jenkins.io/doc/book/managing/plugins/
+* The LeanIX Value Stream Management plugin must be installed: https://www.jenkins.io/doc/book/managing/plugins/
 * You have a valid **LeanIX API token**.
 * If you are **using scripted pipelines** in which the LeanIX plugin is to be integrated as a step, the "Credentials Binding" plugin must be installed: https://plugins.jenkins.io/credentials-binding/. It is assumed user already installed pipeline plugin.  
   For projects such as a **Freestyle project**, in which the plugin can be added via UI as a build step, the plugin for injecting environment variables might be required instead: https://plugins.jenkins.io/envinject/
@@ -27,7 +27,7 @@ In order to be able to use the LeanIX Microservice Intelligence Plugin, the foll
 
 <br>
 <br>
-The configuration of the LeanIX Microservice Plugin is divided into three parts:
+The configuration of the LeanIX Value Stream Management Plugin is divided into three parts:
 
 * [Setting up secrets in the Jenkins administration](#setting-up-secrets-in-the-manage-jenkins-area),
 * [Central configuration of the plugin](#central-configuration-of-the-plugin),
@@ -54,7 +54,7 @@ This section is only important if you want to use the LeanIX plugin in scripted 
 ### Central configuration of the plugin
 
 <br>
-The plugin offers the possibility of central configuration of important settings. For these configurations, after installation, there is an area on the basic level "Dashboard" of Jenkins with the title "LeanIX Microservice Intelligence".
+The plugin offers the possibility of central configuration of important settings. For these configurations, after installation, there is an area on the basic level "Dashboard" of Jenkins with the title "LeanIX Value Stream Management".
 
 
 <img src="images/settings_link.png" alt="Central settings" width="400"/>
@@ -131,12 +131,12 @@ Otherwise the plugin "Environment Injector" (https://plugins.jenkins.io/envinjec
 
 In addition, an SCM provider (e.g. Git) must be set up correctly for the project and the LeanIX manifest file must be located there under the path that is specified in the central configuration for this job.
 
-In order to add the LeanIX plugin to the project, a corresponding build step must be created. To do this, click in the configuration of the Freestyle project under "Build" on "Add build step" and select "LeanIX Microservice Intelligence".
+In order to add the LeanIX plugin to the project, a corresponding build step must be created. To do this, click in the configuration of the Freestyle project under "Build" on "Add build step" and select "LeanIX Value Stream Management".
 
 
 <img src="images/choose_build_step.png" alt="Add plugin to the build steps." width="350"/>
 
-In the input mask with the title "LeanIX Microservice Intelligence" that then appears, fill in the appropriate values ​​or select from the drop-down menus:
+In the input mask with the title "LeanIX Value Stream Management" that then appears, fill in the appropriate values ​​or select from the drop-down menus:
 * **LeanIX-Manifest-Path -readonly-** : This field is readonly, it will be filled automatically after the first run of the plugin. This is the path to the manifest file that is specified in the central configuration. If it is not specified, the default will be "/lx-manifest.yml".
 * **Hostname**: Enter the host name for the appropriate LeanIX region in which your workspace is located.
 * **Apitoken**: Enter the API token that matches the host name or your workspace in this protected field.
@@ -182,7 +182,7 @@ A pipeline step with a built-in LeanIX plugin looks like this:
 <br>
 <br>
 
-When the configuration of the project or pipeline is complete, the start of a build (Build now) will include the execution of the LeanIX plug-in. After execution and if the LeanIX plug-in step has been reached, there is a menu item called **"LeanIX Microservice Intelligence Log"** in the monitoring area of each build (click on the build number in the Pipeline or Project area). In this area you will find the information which values were used for the build by the LeanIX plugin as well as information on the result of the step in the **"Status"** section. Possible errors will be mentioned here.
+When the configuration of the project or pipeline is complete, the start of a build (Build now) will include the execution of the LeanIX plug-in. After execution and if the LeanIX plug-in step has been reached, there is a menu item called **"LeanIX Value Stream Management Log"** in the monitoring area of each build (click on the build number in the Pipeline or Project area). In this area you will find the information which values were used for the build by the LeanIX plugin as well as information on the result of the step in the **"Status"** section. Possible errors will be mentioned here.
 
 ![LeanIX-Log.](images/leanix_log.png)
 
