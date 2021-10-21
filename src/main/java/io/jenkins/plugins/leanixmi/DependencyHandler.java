@@ -91,8 +91,8 @@ public class DependencyHandler {
 
                 processBuilder.redirectErrorStream(true);
 
-                System.out.println("LeanIX Microservice Intelligence: Starting to build the dependencies file...");
-                listener.getLogger().println("LeanIX Microservice Intelligence: Starting to build the dependencies file...");
+                System.out.println("LeanIX Value Stream Management: Starting to build the dependencies file...");
+                listener.getLogger().println("LeanIX Value Stream Management: Starting to build the dependencies file...");
                 Process process = processBuilder.start();
 
                 StringBuilder output = new StringBuilder();
@@ -107,8 +107,8 @@ public class DependencyHandler {
                 reader.close();
                 int exitVal = process.waitFor();
                 if (exitVal == 0) {
-                    System.out.println("LeanIX Microservice Intelligence: Success in building the dependencies file!");
-                    listener.getLogger().println("LeanIX Microservice Intelligence: Success in building the dependencies file!");
+                    System.out.println("LeanIX Value Stream Management: Success in building the dependencies file!");
+                    listener.getLogger().println("LeanIX Value Stream Management: Success in building the dependencies file!");
                     if (dependencyManager.equalsIgnoreCase(NPM)) {
                         File depFile = new File(dmFilePath + "/dependencies.json");
                         if (depFile.exists()) {
@@ -132,9 +132,9 @@ public class DependencyHandler {
                         }
                     }
                 } else {
-                    System.out.println("LeanIX Microservice Intelligence: ERROR in building the dependencies file! \n Output of the build process: " + output);
-                    listener.getLogger().println("LeanIX Microservice Intelligence: ERROR in building the dependencies file, but no exception occurred. \n Output of the build process: " + output);
-                    logAction.setResult("LeanIX Microservice Intelligence: ERROR in building the dependencies file, but no exception occurred. \n Output of the build process: " + output);
+                    System.out.println("LeanIX Value Stream Management: ERROR in building the dependencies file! \n Output of the build process: " + output);
+                    listener.getLogger().println("LeanIX Value Stream Management: ERROR in building the dependencies file, but no exception occurred. \n Output of the build process: " + output);
+                    logAction.setResult("LeanIX Value Stream Management: ERROR in building the dependencies file, but no exception occurred. \n Output of the build process: " + output);
                 }
                 System.out.println(output);
 

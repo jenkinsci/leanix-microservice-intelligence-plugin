@@ -3,7 +3,7 @@
 
 ## Installation prerequisites
 
-Since you are reading this file, you are already accessing the Github project for the MI CICD Jenkins plugin. 
+Since you are reading this file, you are already accessing the Github project for the VSM CICD Jenkins plugin. 
 Please pull the entire project into a folder on your machine, if you have not already done so.
 Make sure Docker is installed on your computer. Otherwise, please follow the instructions at https://docs.docker.com/get-docker/.
 Make sure Java 8 is installed on your computer.
