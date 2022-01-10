@@ -12,6 +12,7 @@ public class LeanIXLogAction implements RunAction2 {
     private String stage;
     private String version;
     private String dependencymanager;
+    private String mavenSettingsPath;
     public static final String TOKEN_FAILED = "Could not send the LeanIX-data, because the Authentication failed. Please check your Hostname and API-Token.";
     public static final String CONFIGFILENOTFOUND = "The configuration file for the LeanIX Plugin could not be found.";
     public static final String SCM_FAILED = "Could not send the LeanIX-data, because the SCM could not be accessed correctly.";
@@ -24,6 +25,9 @@ public class LeanIXLogAction implements RunAction2 {
     public static final String VERSION_NOTSET = "Deployment version variable or deployment version value is not set in jenkins environment.";
     public static final String DEPENDENCIES_NOT_GENERATED = "The dependencies of your project couldn't be generated.";
     public static final String DEPENDENCY_MANAGER_NOT_SET = "The dependencies of your project couldn't be generated. The dependency manager doesn't seem to be set correctly. Please check your settings.";
+    public static final String MAVEN_SETTINGS_FILE_WRONG = "The maven settings file could not be parsed, please check that it is correct.";
+    public static final String MAVEN_SETTINGS_FILE_NOTFOUND = "The maven settings file could not be found in your Source Code Management "
+        + "System, please check that the path you specified is correct.";
 
 
     @Override
@@ -98,4 +102,8 @@ public class LeanIXLogAction implements RunAction2 {
     public void setDependencymanager(String dependencymanager) {
         this.dependencymanager = dependencymanager;
     }
+
+    public String getMavenSettingsPath() { return mavenSettingsPath; }
+
+    public void setMavenSettingsPath(String mavenSettingsPath) { this.mavenSettingsPath = mavenSettingsPath; }
 }
