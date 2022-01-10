@@ -40,6 +40,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
+    private String mavenSettingsPath = "";
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
@@ -122,6 +123,15 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         this.deploymentversion = deploymentversion;
     }
 
+    public String getMavenSettingsPath() {
+        return mavenSettingsPath;
+    }
+
+    @DataBoundSetter
+    public void setMavenSettingsPath(String mavenSettingsPath) {
+        this.mavenSettingsPath = mavenSettingsPath;
+    }
+
     @Override
     public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener) throws InterruptedException, IOException {
 
@@ -185,7 +195,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (run.getResult() != null && manifestFileFound) {
 
                         File projectDependencies =
-                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener, logAction);
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener, logAction, mavenSettingsPath);
                         if (projectDependencies == null) {
                             run.setResult(Result.fromString(getJobresultchoice()));
                         }
