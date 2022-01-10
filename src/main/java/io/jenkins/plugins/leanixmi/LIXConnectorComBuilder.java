@@ -40,7 +40,7 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
     private String jobresultchoice = "";
     private String deploymentstage;
     private String deploymentversion;
-    private String mavenSettingsPath = "";
+    private String mavensettingspath = "";
 
     @DataBoundConstructor
     public LIXConnectorComBuilder() {
@@ -123,13 +123,13 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
         this.deploymentversion = deploymentversion;
     }
 
-    public String getMavenSettingsPath() {
-        return mavenSettingsPath;
+    public String getMavensettingspath() {
+        return mavensettingspath;
     }
 
     @DataBoundSetter
-    public void setMavenSettingsPath(String mavenSettingsPath) {
-        this.mavenSettingsPath = mavenSettingsPath;
+    public void setMavensettingspath(String mavensettingspath) {
+        this.mavensettingspath = mavensettingspath;
     }
 
     @Override
@@ -195,7 +195,8 @@ public class LIXConnectorComBuilder extends Builder implements SimpleBuildStep, 
                     if (run.getResult() != null && manifestFileFound) {
 
                         File projectDependencies =
-                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener, logAction, mavenSettingsPath);
+                                dependencyHandler.createProjectDependenciesFile(dependencymanager, folderPathFile, folderPath, listener, logAction,
+                                    mavensettingspath);
                         if (projectDependencies == null) {
                             run.setResult(Result.fromString(getJobresultchoice()));
                         }
