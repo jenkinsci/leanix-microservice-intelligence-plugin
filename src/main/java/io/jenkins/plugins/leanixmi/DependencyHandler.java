@@ -22,7 +22,7 @@ public class DependencyHandler {
 
 
 
-    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener, LeanIXLogAction logAction) {
+    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener, LeanIXLogAction logAction, String mavenSettingsPath) {
 
         if(dependencyManager.equals("")){
                 logAction.setResult(LeanIXLogAction.DEPENDENCY_MANAGER_NOT_SET);
@@ -85,7 +85,7 @@ public class DependencyHandler {
                     if (!OS.contains(WINDOWS)) {
                         dmFilePath = dmFilePath + "/";
                     }
-                    processBuilder.command(filePath, dmFilePath, dependencyManager.toUpperCase());
+                    processBuilder.command(filePath, dmFilePath, dependencyManager.toUpperCase(), mavenSettingsPath);
                 }
 
 
