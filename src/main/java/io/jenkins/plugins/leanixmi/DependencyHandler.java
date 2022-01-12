@@ -3,6 +3,10 @@ package io.jenkins.plugins.leanixmi;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.leanixmi.scriptresources.BuildScripts;
 import io.jenkins.plugins.leanixmi.scriptresources.ShellScripts;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
 import jenkins.model.Jenkins;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -173,14 +177,36 @@ public class DependencyHandler {
         if (file.isDirectory()) {
             File[] arr = file.listFiles();
             if (arr != null) {
-                for (File f : arr) {
-                    boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
+                if (dependencyManager.equals(MAVEN)) {
+                    // Perform BFS to get the pom.xml
+                    Queue<File> files = new LinkedList<>(List.of(arr));
+                    while (!files.isEmpty()) {
+                        File f = files.poll();
+                        if (f.isDirectory()) {
+                            File[] filesInThisDirectory = f.listFiles();
+                            if (Objects.nonNull(filesInThisDirectory)) {
+                                files.addAll(List.of(filesInThisDirectory));
+                            }
+                         }
+                        else {
+                            if (f.getName().equals(fileName)) {
+                                return new File(f.getAbsolutePath()
+                                    .substring(0, f.getAbsolutePath().length() - f.getName().length() - 1));
+                            }
+                        }
+                    }
+                }
 
-                    //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
-                    if (!dependencyManager.equalsIgnoreCase(NPM) || (!f.getPath().contains("node_modules") && !check)) {
-                        File found = searchDependencyFile(scmRootFolder, f, fileName, dependencyManager);
-                        if (found != null) {
-                            return found;
+                else {
+                    for (File f : arr) {
+                        boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
+
+                        //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
+                        if (!dependencyManager.equalsIgnoreCase(NPM) || (!f.getPath().contains("node_modules") && !check)) {
+                            File found = searchDependencyFile(scmRootFolder, f, fileName, dependencyManager);
+                            if (found != null) {
+                                return found;
+                            }
                         }
                     }
                 }
