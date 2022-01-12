@@ -51,13 +51,7 @@ public class DependencyHandler {
             try {
 
                 File file = new File(filePath);
-                if (file.exists()) {
-                    listener.getLogger().println("...script file for dependency generation already exists on local file system...");
-                    if (!file.setExecutable(true)) {
-                        throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
-                    }
-                } else {
-                    listener.getLogger().println("...generating script file for dependency generation on local file system...");
+                    listener.getLogger().println("...generating/updating script file for dependency generation on local file system...");
                     String scriptFileCopiedPath = generateFileForLocalFilesystem("/console_scripts/" + fileName, scriptObject);
                     File scriptFile = new File(scriptFileCopiedPath);
                     if (scriptFile.exists()) {
@@ -66,7 +60,6 @@ public class DependencyHandler {
                             throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
                         }
                     }
-                }
 
                 if (dependencyManager.equalsIgnoreCase(GRADLE)) {
                     String gradleInitFileName = "micicd-init.gradle";
