@@ -175,30 +175,29 @@ public class DependencyHandler {
 
     private File searchDependencyFile(String scmRootFolder, File file, String fileName, String dependencyManager) {
         if (file.isDirectory()) {
-            File[] arr = file.listFiles();
-            if (arr != null) {
+            File[] rootFolderFiles = file.listFiles();
+            if (rootFolderFiles != null) {
                 if (dependencyManager.equals(MAVEN)) {
                     // Perform BFS to get the pom.xml
-                    Queue<File> files = new LinkedList<>(List.of(arr));
-                    while (!files.isEmpty()) {
-                        File f = files.poll();
-                        if (f.isDirectory()) {
-                            File[] filesInThisDirectory = f.listFiles();
+                    Queue<File> filesQueue = new LinkedList<>(List.of(rootFolderFiles));
+                    while (!filesQueue.isEmpty()) {
+                        File currentFile = filesQueue.poll();
+                        if (currentFile.isDirectory()) {
+                            File[] filesInThisDirectory = currentFile.listFiles();
                             if (Objects.nonNull(filesInThisDirectory)) {
-                                files.addAll(List.of(filesInThisDirectory));
+                                filesQueue.addAll(List.of(filesInThisDirectory));
                             }
                          }
                         else {
-                            if (f.getName().equals(fileName)) {
-                                return new File(f.getAbsolutePath()
-                                    .substring(0, f.getAbsolutePath().length() - f.getName().length() - 1));
+                            if (currentFile.getName().equals(fileName)) {
+                                return new File(currentFile.getAbsolutePath()
+                                    .substring(0, currentFile.getAbsolutePath().length() - currentFile.getName().length() - 1));
                             }
                         }
                     }
                 }
-
                 else {
-                    for (File f : arr) {
+                    for (File f : rootFolderFiles) {
                         boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
 
                         //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
