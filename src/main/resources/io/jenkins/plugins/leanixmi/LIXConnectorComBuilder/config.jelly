@@ -9,7 +9,7 @@
         <f:textbox/>
     </f:entry>
     <f:entry title="${%Maven-Settings-Path}" field="mavensettingspath">
-        <f:textbox default=".github/settings.xml"/>
+        <f:textbox default="settings.xml"/>
     </f:entry>
     <f:entry title="${%Apitoken}" field="apitoken"
              description="${%LeanIXCredentialsDescr}">
