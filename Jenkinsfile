@@ -1,1 +1,1 @@
-buildPlugin()
+buildPlugin(tests: {allowEmptyResults: true, testResults: '**/test-results/*.xml'})
