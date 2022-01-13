@@ -35,7 +35,7 @@ public class DependencyHandler {
         }
 
         String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
-        listener.getLogger().println("DM File Path - " + dmFilePath);
+        listener.getLogger().println("Generated dependency manager File Path - " + dmFilePath);
         if (!dmFilePath.equals("")) {
 
 
