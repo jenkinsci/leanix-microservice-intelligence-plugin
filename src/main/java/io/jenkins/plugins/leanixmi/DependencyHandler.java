@@ -3,8 +3,8 @@ package io.jenkins.plugins.leanixmi;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.leanixmi.scriptresources.BuildScripts;
 import io.jenkins.plugins.leanixmi.scriptresources.ShellScripts;
+import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import jenkins.model.Jenkins;
@@ -189,13 +189,13 @@ public class DependencyHandler {
             if (rootFolderFiles != null) {
                 if (dependencyManager.equalsIgnoreCase(MAVEN)) {
                     // Perform Level based search strategy to get the pom.xml
-                    Queue<File> filesQueue = new LinkedList<>(List.of(rootFolderFiles));
+                    Queue<File> filesQueue = new LinkedList<>(Arrays.asList(rootFolderFiles));
                     while (!filesQueue.isEmpty()) {
                         File currentFile = filesQueue.poll();
                         if (currentFile.isDirectory()) {
                             File[] filesInThisDirectory = currentFile.listFiles();
                             if (Objects.nonNull(filesInThisDirectory)) {
-                                filesQueue.addAll(List.of(filesInThisDirectory));
+                                filesQueue.addAll(Arrays.asList(filesInThisDirectory));
                             }
                          }
                         else {
