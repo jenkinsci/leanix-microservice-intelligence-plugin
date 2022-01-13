@@ -35,6 +35,8 @@ public class DependencyHandler {
         }
 
         String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
+        System.out.println("DM File Path - " + dmFilePath);
+        listener.getLogger().println("DM File Path - " + dmFilePath);
         if (!dmFilePath.equals("")) {
 
 
@@ -177,8 +179,8 @@ public class DependencyHandler {
         if (file.isDirectory()) {
             File[] rootFolderFiles = file.listFiles();
             if (rootFolderFiles != null) {
-                if (dependencyManager.equals(MAVEN)) {
-                    // Perform BFS to get the pom.xml
+                if (dependencyManager.equalsIgnoreCase(MAVEN)) {
+                    // Perform Level based search strategy to get the pom.xml
                     Queue<File> filesQueue = new LinkedList<>(List.of(rootFolderFiles));
                     while (!filesQueue.isEmpty()) {
                         File currentFile = filesQueue.poll();
