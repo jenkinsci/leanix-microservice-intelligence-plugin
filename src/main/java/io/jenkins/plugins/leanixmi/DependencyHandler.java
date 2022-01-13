@@ -35,7 +35,6 @@ public class DependencyHandler {
         }
 
         String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
-        System.out.println("DM File Path - " + dmFilePath);
         listener.getLogger().println("DM File Path - " + dmFilePath);
         if (!dmFilePath.equals("")) {
 
@@ -90,8 +89,17 @@ public class DependencyHandler {
 
                 processBuilder.redirectErrorStream(true);
 
-                System.out.println("LeanIX Value Stream Management: Starting to build the dependencies file...");
-                listener.getLogger().println("LeanIX Value Stream Management: Starting to build the dependencies file...");
+                if (mavenSettingsPath.isEmpty()) {
+                    System.out.println("LeanIX Value Stream Management: Starting to build the dependencies file...");
+                    listener.getLogger().println("LeanIX Value Stream Management: Starting to build the dependencies file...");
+                } else {
+
+                    System.out.printf(
+                        "LeanIX Value Stream Management: Maven repository detected with custom user settings (using path %s). Attempting to generate dependency file%n",mavenSettingsPath);
+                    listener.getLogger().printf(
+                        "LeanIX Value Stream Management: Maven repository detected with custom user settings (using path %s). Attempting to generate dependency file%n",mavenSettingsPath);
+                }
+
                 Process process = processBuilder.start();
 
                 StringBuilder output = new StringBuilder();
