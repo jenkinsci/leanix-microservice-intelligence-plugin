@@ -24,12 +24,7 @@ public class LeanIXLogAction implements RunAction2 {
     public static final String STAGE_NOTSET = "Deployment stage variable value is not set in jenkins environment.";
     public static final String VERSION_NOTSET = "Deployment version variable or deployment version value is not set in jenkins environment.";
     public static final String DEPENDENCIES_NOT_GENERATED = "The dependencies of your project couldn't be generated.";
-    public static final String DEPENDENCY_MANAGER_NOT_SET = "The dependencies of your project couldn't be generated. The dependency manager doesn't seem to be set correctly. Please check your settings.";
-    public static final String MAVEN_SETTINGS_FILE_WRONG = "The maven settings file could not be parsed, please check that it is correct.";
-    public static final String MAVEN_SETTINGS_FILE_NOTFOUND =
-        "The maven settings file could not be found in your Source Code Management "
-            + "System, please check that the path you specified is correct.";
-
+    public static final String DEPENDENCY_MANAGER_NOT_SET = "The dependencies of your project couldn't be generated. The dependency manager doesn't seem to be set correctly. Please check your settings.";;
 
     @Override
     public void onAttached(Run<?, ?> run) {
