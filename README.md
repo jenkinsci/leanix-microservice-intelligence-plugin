@@ -193,27 +193,29 @@ The plugin also logs information in the **"Console Output"** section, which is p
 <br>
 
 ## Know How
-# Fetching dependencies from custom Maven server
+### Fetching dependencies from custom Maven server
 <br>
-<br>
-**Info** Follow [Maven official documentation](https://maven.apache.org/settings.html) for more details about the settings file
+**Info**
+
+Follow [Maven official documentation](https://maven.apache.org/settings.html) for more details about the settings file
 
 Following is an example maven settings file present in a GitHub repository.
-`<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-<servers>
-<server>
-<id>custom-server</id>
-<username>${env.MAVEN_USERNAME}</username>
-<password>${env.MAVEN_PASSWORD}</password>
-</server>
-</servers>
+
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <servers>
+        <server>
+            <id>custom-server</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+    </servers>
 <!--...-->
-</settings>`
+</settings>
+```
 
-
-<br>
 <br>
 Following is an example of how to specify the settings.xml file in the LeanIX Microservice Intelligence *build* step. Ensure to specify the path relative to the root directory
 
@@ -223,8 +225,8 @@ Following is an example of how to specify the settings.xml file in the LeanIX Mi
 <br>
 Following is an example of how to specify the settings.xml file in the *pipeline* step with a built-in LeanIX plugin. Ensure to specify the path relative to the root directory
 
-`steps {
-withCredentials([usernamePassword(credentialsId: 'LEANIX_CREDENTIALS', passwordVariable: 'token', usernameVariable: 'host')]) {
-leanIXMicroserviceIntelligence hostname: host, useleanixconnector: true, dependencymanager: 'MAVEN', mavensettingspath: './settings.xml'
-}
-}`
+        steps {
+            withCredentials([usernamePassword(credentialsId: 'LEANIX_CREDENTIALS', passwordVariable: 'token', usernameVariable: 'host')]) {
+                leanIXMicroserviceIntelligence hostname: host, useleanixconnector: true, dependencymanager: 'MAVEN', mavensettingspath: './settings.xml'
+            }
+        }
