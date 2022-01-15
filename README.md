@@ -45,7 +45,7 @@ This section is only important if you want to use the LeanIX plugin in scripted 
 * **Username**: The host and thus the part of a URL that specifies the region of the LeanIX service in which the workspace is located, to which the data extracted by the plugin is to be sent.
 * **Password**: A valid API token for the LeanIX workspace that matches the host.
 * **ID**: "LEANIX_CREDENTIALS" is suggested here, but any valid variable name can be selected. It just needs to be used accordingly in the pipeline.
-* **Desciption**: It is suggested to add a description here, so user can differentiate the credentials when using credentials binding plugin.
+* **Description**: It is suggested to add a description here, so user can differentiate the credentials when using credentials binding plugin.
 
 ![Example for credentials](images/credentials.png)
 
@@ -139,6 +139,8 @@ In order to add the LeanIX plugin to the project, a corresponding build step mus
 In the input mask with the title "LeanIX Value Stream Management" that then appears, fill in the appropriate values ​​or select from the drop-down menus:
 * **LeanIX-Manifest-Path -readonly-** : This field is readonly, it will be filled automatically after the first run of the plugin. This is the path to the manifest file that is specified in the central configuration. If it is not specified, the default will be "/lx-manifest.yml".
 * **Hostname**: Enter the host name for the appropriate LeanIX region in which your workspace is located.
+* **Maven-Settings-Path**: The path to the settings.xml file in your SCM (Git, SVN etc.) for the pipelines or jobs.
+  More details about this attribute is documented under [Know How](#know-how)
 * **Apitoken**: Enter the API token that matches the host name or your workspace in this protected field.
 * **Result in case of failure**: Indicate what influence a failure of the LeanIX plugin should have on EXACTLY THIS JOB. If you do not make a selection, the selection of the central configuration is used. If you make a selection, the entry for the central configuration for this job will be overwritten. Before the next restart of Jenkins, the central configuration result setting will not be used again.
 * **Dependency manager of the SCM**: Select which DependencyManager you use for your project. This information is important so that the correct dependencies can be generated from your SCM and integrated into the appropriate factsheet. The LeanIX plugin currently supports NPM, MAVEN and GRADLE.
@@ -188,3 +190,41 @@ When the configuration of the project or pipeline is complete, the start of a bu
 
 The plugin also logs information in the **"Console Output"** section, which is present with every build.
 
+<br>
+
+## Know How
+# Fetching dependencies from custom Maven server
+<br>
+<br>
+**Info** Follow [Maven official documentation](https://maven.apache.org/settings.html) for more details about the settings file
+
+Following is an example maven settings file present in a GitHub repository.
+`<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+<servers>
+<server>
+<id>custom-server</id>
+<username>${env.MAVEN_USERNAME}</username>
+<password>${env.MAVEN_PASSWORD}</password>
+</server>
+</servers>
+<!--...-->
+</settings>`
+
+
+<br>
+<br>
+Following is an example of how to specify the settings.xml file in the LeanIX Microservice Intelligence *build* step. Ensure to specify the path relative to the root directory
+
+![Build configuration including settings.xml for Maven Dependency Manager](images/freestyle_project_configuration.png)
+
+<br>
+<br>
+Following is an example of how to specify the settings.xml file in the *pipeline* step with a built-in LeanIX plugin. Ensure to specify the path relative to the root directory
+
+`steps {
+withCredentials([usernamePassword(credentialsId: 'LEANIX_CREDENTIALS', passwordVariable: 'token', usernameVariable: 'host')]) {
+leanIXMicroserviceIntelligence hostname: host, useleanixconnector: true, dependencymanager: 'MAVEN', mavensettingspath: './settings.xml'
+}
+}`
