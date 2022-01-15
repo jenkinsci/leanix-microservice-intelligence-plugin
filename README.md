@@ -201,6 +201,8 @@ Follow [Maven official documentation](https://maven.apache.org/settings.html) fo
 
 Following is an example maven settings file present in a GitHub repository.
 
+**Ensure to provide the values of id, username, password directly in the file i.e Environment variables cannot be embedded into this during run-time**
+
 ```xml
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -208,8 +210,8 @@ Following is an example maven settings file present in a GitHub repository.
     <servers>
         <server>
             <id>custom-server</id>
-            <username>${env.MAVEN_USERNAME}</username>
-            <password>${env.MAVEN_PASSWORD}</password>
+            <username>username</username>
+            <password>password</password>
         </server>
     </servers>
 <!--...-->
