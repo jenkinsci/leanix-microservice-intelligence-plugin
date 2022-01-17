@@ -3,6 +3,10 @@ package io.jenkins.plugins.leanixmi;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.leanixmi.scriptresources.BuildScripts;
 import io.jenkins.plugins.leanixmi.scriptresources.ShellScripts;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
 import jenkins.model.Jenkins;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +26,7 @@ public class DependencyHandler {
 
 
 
-    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener, LeanIXLogAction logAction) {
+    public File createProjectDependenciesFile(String dependencyManager, File scmRootFolderFile, String scmRootFolder, TaskListener listener, LeanIXLogAction logAction, String mavenSettingsPath) {
 
         if(dependencyManager.equals("")){
                 logAction.setResult(LeanIXLogAction.DEPENDENCY_MANAGER_NOT_SET);
@@ -31,6 +35,7 @@ public class DependencyHandler {
         }
 
         String dmFilePath = getDependencyManagerFilePath(dependencyManager, scmRootFolderFile, scmRootFolder);
+        listener.getLogger().println("Generated dependency manager File Path - " + dmFilePath);
         if (!dmFilePath.equals("")) {
 
 
@@ -51,13 +56,7 @@ public class DependencyHandler {
             try {
 
                 File file = new File(filePath);
-                if (file.exists()) {
-                    listener.getLogger().println("...script file for dependency generation already exists on local file system...");
-                    if (!file.setExecutable(true)) {
-                        throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
-                    }
-                } else {
-                    listener.getLogger().println("...generating script file for dependency generation on local file system...");
+                    listener.getLogger().println("...generating/updating script file for dependency generation on local file system...");
                     String scriptFileCopiedPath = generateFileForLocalFilesystem("/console_scripts/" + fileName, scriptObject);
                     File scriptFile = new File(scriptFileCopiedPath);
                     if (scriptFile.exists()) {
@@ -66,7 +65,6 @@ public class DependencyHandler {
                             throw new SecurityException(NO_PERMISSION_TO_EXECUTE);
                         }
                     }
-                }
 
                 if (dependencyManager.equalsIgnoreCase(GRADLE)) {
                     String gradleInitFileName = "micicd-init.gradle";
@@ -85,14 +83,23 @@ public class DependencyHandler {
                     if (!OS.contains(WINDOWS)) {
                         dmFilePath = dmFilePath + "/";
                     }
-                    processBuilder.command(filePath, dmFilePath, dependencyManager.toUpperCase());
+                    processBuilder.command(filePath, dmFilePath, dependencyManager.toUpperCase(), mavenSettingsPath);
                 }
 
 
                 processBuilder.redirectErrorStream(true);
 
-                System.out.println("LeanIX Value Stream Management: Starting to build the dependencies file...");
-                listener.getLogger().println("LeanIX Value Stream Management: Starting to build the dependencies file...");
+                if (mavenSettingsPath.isEmpty()) {
+                    System.out.println("LeanIX Value Stream Management: Starting to build the dependencies file...");
+                    listener.getLogger().println("LeanIX Value Stream Management: Starting to build the dependencies file...");
+                } else {
+
+                    System.out.printf(
+                        "LeanIX Value Stream Management: Maven repository detected with custom user settings (using path %s). Attempting to generate dependency file%n",mavenSettingsPath);
+                    listener.getLogger().printf(
+                        "LeanIX Value Stream Management: Maven repository detected with custom user settings (using path %s). Attempting to generate dependency file%n",mavenSettingsPath);
+                }
+
                 Process process = processBuilder.start();
 
                 StringBuilder output = new StringBuilder();
@@ -178,16 +185,37 @@ public class DependencyHandler {
 
     private File searchDependencyFile(String scmRootFolder, File file, String fileName, String dependencyManager) {
         if (file.isDirectory()) {
-            File[] arr = file.listFiles();
-            if (arr != null) {
-                for (File f : arr) {
-                    boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
+            File[] rootFolderFiles = file.listFiles();
+            if (rootFolderFiles != null) {
+                if (dependencyManager.equalsIgnoreCase(MAVEN)) {
+                    // Perform Level based search strategy to get the pom.xml
+                    Queue<File> filesQueue = new LinkedList<>(Arrays.asList(rootFolderFiles));
+                    while (!filesQueue.isEmpty()) {
+                        File currentFile = filesQueue.poll();
+                        if (currentFile.isDirectory()) {
+                            File[] filesInThisDirectory = currentFile.listFiles();
+                            if (Objects.nonNull(filesInThisDirectory)) {
+                                filesQueue.addAll(Arrays.asList(filesInThisDirectory));
+                            }
+                         }
+                        else {
+                            if (currentFile.getName().equals(fileName)) {
+                                return new File(currentFile.getAbsolutePath()
+                                    .substring(0, currentFile.getAbsolutePath().length() - currentFile.getName().length() - 1));
+                            }
+                        }
+                    }
+                }
+                else {
+                    for (File f : rootFolderFiles) {
+                        boolean check = Paths.get(f.getAbsolutePath()).startsWith(scmRootFolder + "/app");
 
-                    //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
-                    if (!dependencyManager.equalsIgnoreCase(NPM) || (!f.getPath().contains("node_modules") && !check)) {
-                        File found = searchDependencyFile(scmRootFolder, f, fileName, dependencyManager);
-                        if (found != null) {
-                            return found;
+                        //deal with npm's node_modules here, otherwise all the package.json from there will be found after npm install
+                        if (!dependencyManager.equalsIgnoreCase(NPM) || (!f.getPath().contains("node_modules") && !check)) {
+                            File found = searchDependencyFile(scmRootFolder, f, fileName, dependencyManager);
+                            if (found != null) {
+                                return found;
+                            }
                         }
                     }
                 }

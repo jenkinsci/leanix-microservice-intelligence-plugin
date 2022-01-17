@@ -45,7 +45,7 @@ public class ConnectorHandler {
                             RequestBody.create(MediaType.parse("application/json"), dataObj.toJSONString()));
 
             if (projectDependencies != null && !dependencyManager.equals("")) {
-                builder.addFormDataPart("", projectDependencies.getAbsolutePath(),
+                builder.addFormDataPart("dependencies", projectDependencies.getAbsolutePath(),
                         RequestBody.create(MediaType.parse("application/octet-stream"),
                                 new File(projectDependencies.getAbsolutePath())));
             }
@@ -73,7 +73,6 @@ public class ConnectorHandler {
             }else{
                 listener.getLogger().println("The LeanIX API was called and responded with \n Response code: " + responseCode + " - " + response.message() + "\n Response message: " + responseJSON);
             }
-
 
             return response.code();
         } catch (Exception e) {
