@@ -195,7 +195,8 @@ The plugin also logs information in the **"Console Output"** section, which is p
 ## Know How
 ### Fetching dependencies from custom Maven server
 <br>
-**Info**
+
+**Information**
 
 Follow [Maven official documentation](https://maven.apache.org/settings.html) for more details about the settings file
 
