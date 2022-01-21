@@ -63,11 +63,7 @@ When you call this up, you will find two areas in which settings can be made.
 
 <br>
 
-##### 1.
-
-<br>
-
-In the uppermost area with the title **"Pipeline Configuration in JSON format"** there is an input field in which configurations in JSON format can be inserted.
+1. In the uppermost area with the title **"Pipeline Configuration in JSON format"** there is an input field in which configurations in JSON format can be inserted.
 The structure of these configurations is as follows:
 
 * **"leanIXConfigurations"** contains all configurations, root of the file
@@ -106,10 +102,7 @@ This is an example of a configuration:
 
 <br>
 
-##### 2.
-
-<br>
-In the second area, "Job result", you can make the basic setting for all jobs / pipelines, which impact a failure of the LeanIX build step will have for the entire job or the entire pipeline. One of the five options that Jenkins offers as a result can be selected here. If the plugin fails, the selected result is set as the end result of the executed job. The default value for the result is "SUCCESS" which means that a failure of the LeanIX-Plugin does not make the pipeline/job fail.
+2. In the second area, "Job result", you can make the basic setting for all jobs / pipelines, which impact a failure of the LeanIX build step will have for the entire job or the entire pipeline. One of the five options that Jenkins offers as a result can be selected here. If the plugin fails, the selected result is set as the end result of the executed job. The default value for the result is "SUCCESS" which means that a failure of the LeanIX-Plugin does not make the pipeline/job fail.
 
 <img src="images/job_result.png" alt="Job result setting" width="600"/>
 
