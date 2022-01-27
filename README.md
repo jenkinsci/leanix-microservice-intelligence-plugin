@@ -213,7 +213,7 @@ Following is an example maven settings file present in a GitHub repository.
 ```
 
 <br>
-Following is an example of how to specify the settings.xml file in the LeanIX Microservice Intelligence *build* step. Ensure to specify the path relative to the root directory
+Following is an example of how to specify the settings.xml file in the LeanIX Value Stream Management *build* step. Ensure to specify the path relative to the root directory
 
 ![Build configuration including settings.xml for Maven Dependency Manager](images/freestyle_project_configuration.png)
 
