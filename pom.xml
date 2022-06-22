@@ -13,7 +13,7 @@
     <packaging>hpi</packaging>
     <properties>
         <gitHubRepo>jenkinsci/leanix-microservice-intelligence-plugin</gitHubRepo>
-        <revision>1.0.12</revision>
+        <revision>1.0.13</revision>
         <changelist>-SNAPSHOT</changelist>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.355</jenkins.version>
