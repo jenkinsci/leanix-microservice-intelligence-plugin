@@ -1,5 +1,8 @@
 
 
+### ⚠️ Deprecation Disclaimer
+> We will deprecate this plugin **effective 25.8.2023** . The legacy VSM product that this plugin supports is not being sold anymore and is in best-effort maintenance stage. The new product offering can be found [here](https://docs-vsm.leanix.net/docs). Please make sure you migrate your workloads to the new VSM product. 
+
 ## Introduction
 <br>
 
